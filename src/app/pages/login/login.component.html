@@ -1,0 +1,103 @@
+<div class="login-page">
+  <!-- Full-screen loading overlay -->
+  @if (loading()) {
+    <div class="loading-overlay">
+      <div class="loading-content">
+        <div class="pulse-ring">
+          <mat-icon class="loading-logo">local_fire_department</mat-icon>
+        </div>
+        <p class="loading-text">{{ isSignUp() ? 'Creating your account...' : 'Signing you in...' }}</p>
+        <div class="dot-loader">
+          <span></span><span></span><span></span>
+        </div>
+      </div>
+    </div>
+  }
+
+  <!-- Left decorative panel -->
+  <div class="login-hero">
+    <div class="hero-content">
+      <div class="hero-icon-ring">
+        <mat-icon class="hero-icon">local_fire_department</mat-icon>
+      </div>
+      <h1>NubCal</h1>
+      <p>Your personal calorie & nutrition tracker. Eat smarter, live healthier.</p>
+      <div class="hero-stats">
+        <div class="stat"><span class="stat-num">2000</span><span class="stat-label">Daily Goal</span></div>
+        <div class="stat-divider"></div>
+        <div class="stat"><span class="stat-num">3</span><span class="stat-label">Macros</span></div>
+        <div class="stat-divider"></div>
+        <div class="stat"><span class="stat-num">7</span><span class="stat-label">Day Chart</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Right form panel -->
+  <div class="login-form-panel">
+    <div class="form-wrapper">
+      <div class="mobile-logo">
+        <mat-icon>local_fire_department</mat-icon>
+        <span>NubCal</span>
+      </div>
+
+      <h2>{{ isSignUp() ? 'Create your account' : 'Welcome back' }}</h2>
+      <p class="form-subtitle">{{ isSignUp() ? 'Start tracking your nutrition today' : 'Sign in to continue tracking' }}</p>
+
+      <div class="toggle-row">
+        <button
+          mat-button
+          [class.active]="!isSignUp()"
+          (click)="isSignUp() && toggleMode()"
+          type="button"
+        >Sign In</button>
+        <button
+          mat-button
+          [class.active]="isSignUp()"
+          (click)="!isSignUp() && toggleMode()"
+          type="button"
+        >Sign Up</button>
+      </div>
+
+      <form (ngSubmit)="onSubmit()" class="login-form">
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Email</mat-label>
+          <input matInput type="email" [(ngModel)]="email" name="email" required autocomplete="email" />
+          <mat-icon matPrefix>email</mat-icon>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline" class="full-width">
+          <mat-label>Password</mat-label>
+          <input matInput type="password" [(ngModel)]="password" name="password" required autocomplete="current-password" />
+          <mat-icon matPrefix>lock</mat-icon>
+        </mat-form-field>
+
+        @if (errorMessage()) {
+          <div class="error-message">
+            <mat-icon>error_outline</mat-icon>
+            <span>{{ errorMessage() }}</span>
+          </div>
+        }
+
+        <button
+          mat-flat-button
+          type="submit"
+          class="full-width submit-btn"
+          [class.is-loading]="loading()"
+          [disabled]="loading()"
+        >
+          @if (loading()) {
+            <mat-spinner diameter="22"></mat-spinner>
+            <span class="btn-loading-text">Please wait...</span>
+          } @else {
+            <ng-container>{{ isSignUp() ? 'Create Account' : 'Sign In' }}</ng-container>
+          }
+        </button>
+      </form>
+
+      <p class="footer-text">
+        {{ isSignUp() ? 'Already have an account?' : "Don't have an account?" }}
+        <a (click)="toggleMode()" class="link">{{ isSignUp() ? 'Sign In' : 'Sign Up' }}</a>
+      </p>
+    </div>
+  </div>
+</div>

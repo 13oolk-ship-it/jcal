@@ -1,0 +1,132 @@
+<nav class="top-nav">
+  <button mat-icon-button routerLink="/dashboard">
+    <mat-icon>arrow_back</mat-icon>
+  </button>
+  <span class="nav-title">Add Food</span>
+  <div style="width:40px"></div>
+</nav>
+
+<div class="page">
+  <div class="form-card">
+    <div class="card-header">
+      <div class="icon-circle">
+        <mat-icon>fastfood</mat-icon>
+      </div>
+      <h2>New Food Item</h2>
+      <p>Enter nutritional info per serving</p>
+    </div>
+
+    <!-- AI Scanner Section -->
+    <div class="scanner-section">
+      @if (!previewUrl()) {
+        <div class="scanner-buttons">
+          <button type="button" class="scan-btn camera-btn" (click)="openCamera()">
+            <div class="scan-btn-icon"><mat-icon>photo_camera</mat-icon></div>
+            <div class="scan-btn-text">
+              <span class="scan-btn-title">Take Photo</span>
+              <span class="scan-btn-sub">Use camera to scan</span>
+            </div>
+          </button>
+          <button type="button" class="scan-btn upload-btn" (click)="fileInput.click()">
+            <div class="scan-btn-icon"><mat-icon>image</mat-icon></div>
+            <div class="scan-btn-text">
+              <span class="scan-btn-title">Upload Image</span>
+              <span class="scan-btn-sub">Choose from gallery</span>
+            </div>
+          </button>
+        </div>
+        <input #fileInput type="file" accept="image/*" hidden (change)="onFileSelected($event)" />
+        <input #cameraInput type="file" accept="image/*" capture="environment" hidden (change)="onFileSelected($event)" />
+      } @else {
+        <!-- Preview + Analyze -->
+        <div class="preview-card">
+          <div class="preview-img-wrap">
+            <img [src]="previewUrl()" alt="Food preview" class="preview-img" />
+            @if (scanning()) {
+              <div class="scan-overlay">
+                <div class="scan-line"></div>
+              </div>
+            }
+          </div>
+          <div class="preview-actions">
+            @if (scanning()) {
+              <div class="scanning-status">
+                <mat-spinner diameter="20"></mat-spinner>
+                <span>AI กำลังวิเคราะห์...</span>
+              </div>
+            } @else if (scanDone()) {
+              <div class="scan-success">
+                <mat-icon>check_circle</mat-icon>
+                <span>Auto-filled from image!</span>
+              </div>
+              <button type="button" class="clear-preview-btn" (click)="clearPreview()">
+                <mat-icon>refresh</mat-icon> Scan again
+              </button>
+            } @else {
+              <button type="button" class="analyze-btn" (click)="analyzeImage()">
+                <mat-icon>auto_awesome</mat-icon> Analyze with AI
+              </button>
+              <button type="button" class="clear-preview-btn" (click)="clearPreview()">
+                <mat-icon>close</mat-icon> Remove
+              </button>
+            }
+          </div>
+        </div>
+      }
+      @if (scanError()) {
+        <div class="scan-error">
+          <mat-icon>warning</mat-icon>
+          <span>{{ scanError() }}</span>
+        </div>
+      }
+    </div>
+
+    <div class="divider">
+      <span>Nutritional Info</span>
+    </div>
+
+    <form (ngSubmit)="onSubmit()" class="food-form">
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Food Name</mat-label>
+        <input matInput [(ngModel)]="name" name="name" required placeholder="e.g. Chicken Breast" />
+        <mat-icon matPrefix>label</mat-icon>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Calories (kcal)</mat-label>
+        <input matInput type="number" [(ngModel)]="calories" name="calories" min="0" required />
+        <mat-icon matPrefix>local_fire_department</mat-icon>
+      </mat-form-field>
+
+      <div class="macro-grid">
+        <mat-form-field appearance="outline">
+          <mat-label>Protein (g)</mat-label>
+          <input matInput type="number" [(ngModel)]="protein" name="protein" min="0" />
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Carbs (g)</mat-label>
+          <input matInput type="number" [(ngModel)]="carb" name="carb" min="0" />
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Fat (g)</mat-label>
+          <input matInput type="number" [(ngModel)]="fat" name="fat" min="0" />
+        </mat-form-field>
+      </div>
+
+      @if (errorMessage()) {
+        <div class="error-msg">
+          <mat-icon>error_outline</mat-icon>
+          <span>{{ errorMessage() }}</span>
+        </div>
+      }
+
+      <button mat-flat-button type="submit" class="full-width submit-btn" [disabled]="loading()">
+        @if (loading()) {
+          <mat-spinner diameter="22"></mat-spinner>
+        } @else {
+          <ng-container>Save Food</ng-container>
+        }
+      </button>
+    </form>
+  </div>
+</div>

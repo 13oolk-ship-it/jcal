@@ -1,0 +1,135 @@
+<nav class="top-nav">
+  <button mat-icon-button routerLink="/dashboard">
+    <mat-icon>arrow_back</mat-icon>
+  </button>
+  <span class="nav-title">Manage Foods</span>
+  <button mat-icon-button routerLink="/add-food" matTooltip="Add new food">
+    <mat-icon>add_circle_outline</mat-icon>
+  </button>
+</nav>
+
+<div class="page">
+  <!-- Search bar -->
+  <div class="search-bar">
+    <mat-icon class="search-icon">search</mat-icon>
+    <input type="text" placeholder="Search foods..." [(ngModel)]="searchQuery"
+      (input)="applyFilter()" class="search-input" />
+    @if (searchQuery) {
+      <button class="clear-btn" (click)="searchQuery = ''; applyFilter()">
+        <mat-icon>close</mat-icon>
+      </button>
+    }
+  </div>
+
+  @if (loading()) {
+    <div class="loading-center"><mat-spinner diameter="40"></mat-spinner></div>
+  } @else if (foods().length === 0) {
+    <div class="empty-state">
+      <div class="empty-icon"><mat-icon>fastfood</mat-icon></div>
+      <h3>No foods yet</h3>
+      <p>Add your first food item to get started</p>
+      <button mat-flat-button routerLink="/add-food" class="primary-btn">
+        <mat-icon>add</mat-icon> Add Food
+      </button>
+    </div>
+  } @else {
+    <div class="food-count">
+      <span>{{ filteredFoods().length }} food{{ filteredFoods().length !== 1 ? 's' : '' }}</span>
+    </div>
+
+    <div class="food-list">
+      @for (food of filteredFoods(); track food.id) {
+        <div class="food-item" [class.editing]="editingFood()?.id === food.id">
+          <!-- View mode -->
+          @if (editingFood()?.id !== food.id) {
+            <div class="food-item-main">
+              <div class="food-info">
+                <span class="food-name">{{ food.name }}</span>
+                <div class="food-macros">
+                  <span class="tag cal">{{ food.calories }} kcal</span>
+                  <span class="tag pro">P {{ food.protein }}g</span>
+                  <span class="tag carb">C {{ food.carb }}g</span>
+                  <span class="tag fat">F {{ food.fat }}g</span>
+                </div>
+              </div>
+              <div class="food-actions">
+                <button mat-icon-button (click)="startEdit(food)" class="edit-btn" matTooltip="Edit">
+                  <mat-icon>edit</mat-icon>
+                </button>
+                <button mat-icon-button (click)="confirmDelete(food)" class="del-btn" matTooltip="Delete">
+                  <mat-icon>delete_outline</mat-icon>
+                </button>
+              </div>
+            </div>
+          } @else {
+            <!-- Edit mode -->
+            <div class="edit-form">
+              <div class="edit-row">
+                <label>Name</label>
+                <input type="text" [(ngModel)]="editForm.name" class="edit-input full" />
+              </div>
+              <div class="edit-grid">
+                <div class="edit-field">
+                  <label>Calories</label>
+                  <input type="number" [(ngModel)]="editForm.calories" class="edit-input" min="0" />
+                </div>
+                <div class="edit-field">
+                  <label>Protein</label>
+                  <input type="number" [(ngModel)]="editForm.protein" class="edit-input" min="0" />
+                </div>
+                <div class="edit-field">
+                  <label>Carb</label>
+                  <input type="number" [(ngModel)]="editForm.carb" class="edit-input" min="0" />
+                </div>
+                <div class="edit-field">
+                  <label>Fat</label>
+                  <input type="number" [(ngModel)]="editForm.fat" class="edit-input" min="0" />
+                </div>
+              </div>
+              <div class="edit-actions">
+                <button mat-flat-button class="cancel-edit-btn" (click)="cancelEdit()">Cancel</button>
+                <button mat-flat-button class="save-edit-btn" (click)="saveEdit()" [disabled]="saving()">
+                  @if (saving()) {
+                    <mat-spinner diameter="18"></mat-spinner>
+                  } @else {
+                    <ng-container><mat-icon>check</mat-icon> Save</ng-container>
+                  }
+                </button>
+              </div>
+            </div>
+          }
+        </div>
+      }
+    </div>
+
+    @if (filteredFoods().length === 0 && searchQuery) {
+      <div class="no-results">
+        <mat-icon>search_off</mat-icon>
+        <p>No foods match "{{ searchQuery }}"</p>
+      </div>
+    }
+  }
+</div>
+
+<!-- Delete confirm overlay -->
+@if (foodToDelete()) {
+  <div class="delete-overlay" (click)="cancelDelete()">
+    <div class="delete-dialog" (click)="$event.stopPropagation()">
+      <div class="delete-dialog-icon">
+        <mat-icon>delete_forever</mat-icon>
+      </div>
+      <h4>Delete "{{ foodToDelete()!.name }}"?</h4>
+      <p>This food will be permanently removed. Meals that used it will keep their records.</p>
+      <div class="delete-dialog-actions">
+        <button mat-flat-button class="dialog-cancel" (click)="cancelDelete()">Cancel</button>
+        <button mat-flat-button class="dialog-confirm" (click)="deleteFood()" [disabled]="deleting()">
+          @if (deleting()) {
+            <mat-spinner diameter="20"></mat-spinner>
+          } @else {
+            <ng-container>Delete</ng-container>
+          }
+        </button>
+      </div>
+    </div>
+  </div>
+}
