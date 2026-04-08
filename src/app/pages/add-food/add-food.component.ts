@@ -6,10 +6,10 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { SupabaseService } from '../../services/supabase.service';
 import { FoodScannerService } from '../../services/food-scanner.service';
+import { ToastService } from '../../services/toast.service';
 
 @Component({
   selector: 'app-add-food',
@@ -22,7 +22,6 @@ import { FoodScannerService } from '../../services/food-scanner.service';
     MatInputModule,
     MatButtonModule,
     MatIconModule,
-    MatSnackBarModule,
     MatProgressSpinnerModule,
   ],
   templateUrl: './add-food.component.html',
@@ -50,7 +49,7 @@ export class AddFoodComponent {
   constructor(
     private supabase: SupabaseService,
     private router: Router,
-    private snackBar: MatSnackBar,
+    private toast: ToastService,
     private scanner: FoodScannerService,
   ) {}
 
@@ -129,7 +128,7 @@ export class AddFoodComponent {
         carb: this.carb,
         fat: this.fat,
       });
-      this.snackBar.open('Food added successfully!', 'OK', { duration: 3000 });
+      this.toast.success('Food added successfully! 🎉');
       this.router.navigate(['/dashboard']);
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Failed to add food';

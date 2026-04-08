@@ -7,9 +7,9 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { SupabaseService, Food } from '../../services/supabase.service';
+import { ToastService } from '../../services/toast.service';
 
 interface MealEntry {
   foodId: number;
@@ -28,7 +28,6 @@ interface MealEntry {
     MatSelectModule,
     MatButtonModule,
     MatIconModule,
-    MatSnackBarModule,
     MatProgressSpinnerModule,
   ],
   templateUrl: './add-meal.component.html',
@@ -52,7 +51,7 @@ export class AddMealComponent implements OnInit {
   constructor(
     private supabase: SupabaseService,
     private router: Router,
-    private snackBar: MatSnackBar
+    private toast: ToastService,
   ) {}
 
   ngOnInit() {
@@ -124,7 +123,7 @@ export class AddMealComponent implements OnInit {
         await this.supabase.addMealItem(meal.id!, entry.foodId, entry.quantity);
       }
 
-      this.snackBar.open('Meal logged successfully!', 'OK', { duration: 3000 });
+      this.toast.success('Meal logged successfully! 🎉');
       this.router.navigate(['/dashboard']);
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Failed to log meal';

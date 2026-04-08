@@ -1,0 +1,245 @@
+<!-- Top Nav -->
+<nav class="top-nav">
+  <button mat-icon-button routerLink="/dashboard" class="back-btn">
+    <mat-icon>arrow_back</mat-icon>
+  </button>
+  <h1 class="page-title">Workout</h1>
+  <div class="nav-spacer"></div>
+</nav>
+
+<div class="workout-page">
+  @if (loading()) {
+    <div class="loading-center"><mat-spinner diameter="44"></mat-spinner></div>
+  } @else {
+
+    <!-- Today's Burned Summary -->
+    <div class="burn-summary">
+      <div class="burn-icon-wrap"><mat-icon>local_fire_department</mat-icon></div>
+      <div class="burn-info">
+        <span class="burn-value">{{ todayTotalBurned() }}</span>
+        <span class="burn-label">kcal burned today</span>
+      </div>
+    </div>
+
+    <!-- Category Tabs -->
+    <div class="category-tabs">
+      <button class="cat-tab" [class.active]="activeCategory() === 'cardio'"
+        (click)="selectCategory('cardio')">
+        <mat-icon>favorite</mat-icon>
+        <span>Cardio</span>
+      </button>
+      <button class="cat-tab" [class.active]="activeCategory() === 'strength'"
+        (click)="selectCategory('strength')">
+        <mat-icon>fitness_center</mat-icon>
+        <span>Strength</span>
+      </button>
+      <button class="cat-tab" [class.active]="activeCategory() === 'flexibility'"
+        (click)="selectCategory('flexibility')">
+        <mat-icon>self_improvement</mat-icon>
+        <span>Flexibility</span>
+      </button>
+    </div>
+
+    <!-- Exercise Selection (when no exercise selected) -->
+    @if (!selectedExercise()) {
+      <div class="exercise-grid">
+        @for (ex of exercises(); track ex.name) {
+          <button class="exercise-card" (click)="selectExercise(ex)">
+            <mat-icon>{{ ex.icon }}</mat-icon>
+            <span class="ex-name">{{ ex.name }}</span>
+            @if (ex.muscle) {
+              <span class="ex-muscle">{{ ex.muscle }}</span>
+            }
+            <span class="ex-cal">~{{ ex.calPerMin }} cal/min</span>
+          </button>
+        }
+      </div>
+    }
+
+    <!-- Workout Form (when exercise is selected) -->
+    @if (selectedExercise(); as ex) {
+      <div class="workout-form animate-in">
+        <!-- Selected Exercise Header -->
+        <div class="selected-header">
+          <div class="selected-info">
+            <mat-icon class="selected-icon">{{ ex.icon }}</mat-icon>
+            <div>
+              <h2 class="selected-name">{{ ex.name }}</h2>
+              <span class="selected-cat">{{ ex.category | titlecase }}
+                @if (ex.muscle) { · {{ ex.muscle }} }
+              </span>
+            </div>
+          </div>
+          <button class="change-btn" (click)="clearSelection()">
+            <mat-icon>swap_horiz</mat-icon> Change
+          </button>
+        </div>
+
+        <!-- Cardio Form -->
+        @if (ex.category === 'cardio') {
+          <div class="form-section">
+            <label class="form-label">Duration</label>
+            <div class="duration-control">
+              <button class="stepper-btn" (click)="duration.set(Math.max(5, duration() - 5))">
+                <mat-icon>remove</mat-icon>
+              </button>
+              <div class="duration-display">
+                <span class="dur-value">{{ duration() }}</span>
+                <span class="dur-unit">min</span>
+              </div>
+              <button class="stepper-btn" (click)="duration.set(Math.min(180, duration() + 5))">
+                <mat-icon>add</mat-icon>
+              </button>
+            </div>
+          </div>
+
+          <div class="form-section">
+            <label class="form-label">Intensity</label>
+            <div class="intensity-row">
+              @for (opt of intensityOptions; track opt.value) {
+                <button class="intensity-btn" [class.active]="intensity() === opt.value"
+                  [style.--accent]="opt.color"
+                  (click)="intensity.set(opt.value)">
+                  <mat-icon>{{ opt.icon }}</mat-icon>
+                  <span>{{ opt.label }}</span>
+                </button>
+              }
+            </div>
+          </div>
+        }
+
+        <!-- Strength Form -->
+        @if (ex.category === 'strength') {
+          <div class="strength-grid">
+            <div class="form-section">
+              <label class="form-label">Sets</label>
+              <div class="duration-control compact">
+                <button class="stepper-btn sm" (click)="sets.set(Math.max(1, sets() - 1))">
+                  <mat-icon>remove</mat-icon>
+                </button>
+                <div class="duration-display">
+                  <span class="dur-value">{{ sets() }}</span>
+                </div>
+                <button class="stepper-btn sm" (click)="sets.set(Math.min(20, sets() + 1))">
+                  <mat-icon>add</mat-icon>
+                </button>
+              </div>
+            </div>
+
+            <div class="form-section">
+              <label class="form-label">Reps</label>
+              <div class="duration-control compact">
+                <button class="stepper-btn sm" (click)="reps.set(Math.max(1, reps() - 1))">
+                  <mat-icon>remove</mat-icon>
+                </button>
+                <div class="duration-display">
+                  <span class="dur-value">{{ reps() }}</span>
+                </div>
+                <button class="stepper-btn sm" (click)="reps.set(Math.min(50, reps() + 1))">
+                  <mat-icon>add</mat-icon>
+                </button>
+              </div>
+            </div>
+
+            <div class="form-section full-span">
+              <label class="form-label">Weight (kg)</label>
+              <div class="duration-control">
+                <button class="stepper-btn" (click)="weightKg.set(Math.max(0, weightKg() - 2.5))">
+                  <mat-icon>remove</mat-icon>
+                </button>
+                <div class="duration-display">
+                  <span class="dur-value">{{ weightKg() }}</span>
+                  <span class="dur-unit">kg</span>
+                </div>
+                <button class="stepper-btn" (click)="weightKg.set(weightKg() + 2.5)">
+                  <mat-icon>add</mat-icon>
+                </button>
+              </div>
+            </div>
+          </div>
+        }
+
+        <!-- Flexibility Form -->
+        @if (ex.category === 'flexibility') {
+          <div class="form-section">
+            <label class="form-label">Duration</label>
+            <div class="duration-control">
+              <button class="stepper-btn" (click)="flexDuration.set(Math.max(5, flexDuration() - 5))">
+                <mat-icon>remove</mat-icon>
+              </button>
+              <div class="duration-display">
+                <span class="dur-value">{{ flexDuration() }}</span>
+                <span class="dur-unit">min</span>
+              </div>
+              <button class="stepper-btn" (click)="flexDuration.set(Math.min(120, flexDuration() + 5))">
+                <mat-icon>add</mat-icon>
+              </button>
+            </div>
+          </div>
+        }
+
+        <!-- Calories Estimate -->
+        <div class="cal-estimate">
+          <mat-icon>local_fire_department</mat-icon>
+          <span class="cal-num">{{ estimatedCalories() }}</span>
+          <span class="cal-label">kcal estimated burn</span>
+        </div>
+
+        <!-- Notes -->
+        <div class="form-section">
+          <mat-form-field appearance="outline" class="full-width notes-field">
+            <mat-label>Notes (optional)</mat-label>
+            <input matInput [(ngModel)]="notes" placeholder="e.g. felt great!">
+          </mat-form-field>
+        </div>
+
+        <!-- Log Button -->
+        <button mat-flat-button class="log-btn" (click)="logWorkout()" [disabled]="saving()">
+          @if (saving()) {
+            <mat-spinner diameter="22"></mat-spinner>
+          } @else {
+            <mat-icon>check</mat-icon> Log Workout
+          }
+        </button>
+      </div>
+    }
+
+    <!-- Today's Workout History -->
+    @if (todayWorkouts().length > 0) {
+      <section class="history-section">
+        <h3 class="section-title">Today's Workouts</h3>
+        <div class="history-list">
+          @for (w of todayWorkouts(); track w.id) {
+            <div class="history-card">
+              <div class="hist-icon-wrap" [class]="'cat-' + w.category">
+                <mat-icon>{{ getCategoryIcon(w.category) }}</mat-icon>
+              </div>
+              <div class="hist-info">
+                <span class="hist-name">{{ w.exercise_name }}</span>
+                <span class="hist-meta">
+                  @if (w.duration_min) { {{ w.duration_min }}min }
+                  @if (w.sets) { · {{ w.sets }}×{{ w.reps }} }
+                  @if (w.weight_kg) { · {{ w.weight_kg }}kg }
+                  @if (w.intensity) { · {{ w.intensity | titlecase }} }
+                </span>
+              </div>
+              <div class="hist-right">
+                <span class="hist-cal">-{{ w.calories_burned }}</span>
+                <span class="hist-time">{{ formatTime(w.created_at) }}</span>
+              </div>
+              <button class="hist-delete" (click)="deleteWorkout(w)"
+                [disabled]="deletingId() === w.id">
+                @if (deletingId() === w.id) {
+                  <mat-spinner diameter="16"></mat-spinner>
+                } @else {
+                  <mat-icon>close</mat-icon>
+                }
+              </button>
+            </div>
+          }
+        </div>
+      </section>
+    }
+
+  }
+</div>

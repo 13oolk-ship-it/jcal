@@ -1,4 +1,4 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
@@ -8,7 +8,8 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { BaseChartDirective } from 'ng2-charts';
 import { ChartConfiguration } from 'chart.js';
-import { SupabaseService, Meal } from '../../services/supabase.service';
+import { SupabaseService, Meal, Profile, Workout } from '../../services/supabase.service';
+import { ToastService } from '../../services/toast.service';
 
 @Component({
   selector: 'app-dashboard',
@@ -30,61 +31,119 @@ export class DashboardComponent implements OnInit {
   loading = signal(true);
   mealToDelete = signal<Meal | null>(null);
   deletingMealId = signal<number | null>(null);
+  profile = signal<Profile | null>(null);
   tdee = signal(2000);
+  bmr = signal(0);
   totalCalories = signal(0);
   remainingCalories = signal(2000);
   totalProtein = signal(0);
   totalCarbs = signal(0);
   totalFat = signal(0);
   todayMeals = signal<Meal[]>([]);
+  todayWorkouts = signal<Workout[]>([]);
+  totalBurned = signal(0);
   caloriePercent = signal(0);
+  today = new Date();
 
-  // Pie chart
-  pieChartData = signal<ChartConfiguration<'pie'>['data']>({
+  // Computed profile helpers
+  avatarUrl = computed(() => this.profile()?.avatar_url ?? null);
+  genderLabel = computed(() => {
+    const map: Record<string, string> = { male: 'Male', female: 'Female' };
+    return map[this.profile()?.gender ?? ''] ?? '—';
+  });
+  goalLabel = computed(() => {
+    const map: Record<string, string> = { lose: 'Lose Weight', maintain: 'Maintain', gain: 'Gain Weight' };
+    return map[this.profile()?.goal_type ?? ''] ?? '—';
+  });
+  goalIcon = computed(() => {
+    const map: Record<string, string> = { lose: 'trending_down', maintain: 'balance', gain: 'trending_up' };
+    return map[this.profile()?.goal_type ?? ''] ?? 'flag';
+  });
+  activityLabel = computed(() => {
+    const map: Record<string, string> = { sedentary: 'Sedentary', light: 'Light', moderate: 'Moderate', active: 'Very Active' };
+    return map[this.profile()?.activity_level ?? ''] ?? '—';
+  });
+  bmiValue = computed(() => {
+    const p = this.profile();
+    if (!p?.weight || !p?.height) return 0;
+    return +(p.weight / ((p.height / 100) ** 2)).toFixed(1);
+  });
+  bmiCategory = computed(() => {
+    const v = this.bmiValue();
+    if (v === 0) return '';
+    if (v < 18.5) return 'Underweight';
+    if (v < 25) return 'Normal';
+    if (v < 30) return 'Overweight';
+    return 'Obese';
+  });
+  bmiColor = computed(() => {
+    const v = this.bmiValue();
+    if (v < 18.5) return '#0984e3';
+    if (v < 25) return '#00b894';
+    if (v < 30) return '#fdcb6e';
+    return '#d63031';
+  });
+
+  // Macro targets (rough split: 30% protein, 40% carbs, 30% fat)
+  proteinTarget = computed(() => Math.round((this.tdee() * 0.30) / 4));
+  carbsTarget = computed(() => Math.round((this.tdee() * 0.40) / 4));
+  fatTarget = computed(() => Math.round((this.tdee() * 0.30) / 9));
+  proteinPercent = computed(() => Math.min(100, Math.round((this.totalProtein() / Math.max(1, this.proteinTarget())) * 100)));
+  carbsPercent = computed(() => Math.min(100, Math.round((this.totalCarbs() / Math.max(1, this.carbsTarget())) * 100)));
+  fatPercent = computed(() => Math.min(100, Math.round((this.totalFat() / Math.max(1, this.fatTarget())) * 100)));
+
+  // Doughnut chart
+  doughnutChartData = signal<ChartConfiguration<'doughnut'>['data']>({
     labels: ['Protein', 'Carbs', 'Fat'],
-    datasets: [
-      {
-        data: [0, 0, 0],
-        backgroundColor: ['#4caf50', '#2196f3', '#ff9800'],
-      },
-    ],
+    datasets: [{
+      data: [0, 0, 0],
+      backgroundColor: ['#00b894', '#0984e3', '#e17055'],
+      borderWidth: 0,
+      spacing: 2,
+    }],
   });
 
-  pieChartOptions: ChartConfiguration<'pie'>['options'] = {
+  doughnutChartOptions: ChartConfiguration<'doughnut'>['options'] = {
     responsive: true,
-    plugins: {
-      legend: { position: 'bottom' },
-    },
-  };
-
-  // Line chart
-  lineChartData = signal<ChartConfiguration<'line'>['data']>({
-    labels: [],
-    datasets: [
-      {
-        data: [],
-        label: 'Calories',
-        borderColor: '#667eea',
-        backgroundColor: 'rgba(102,126,234,0.15)',
-        fill: true,
-        tension: 0.4,
-      },
-    ],
-  });
-
-  lineChartOptions: ChartConfiguration<'line'>['options'] = {
-    responsive: true,
+    cutout: '70%',
     plugins: {
       legend: { display: false },
     },
+  };
+
+  // Bar chart (weekly)
+  barChartData = signal<ChartConfiguration<'bar'>['data']>({
+    labels: [],
+    datasets: [{
+      data: [],
+      backgroundColor: 'rgba(108,92,231,.25)',
+      borderColor: '#6c5ce7',
+      borderWidth: 2,
+      borderRadius: 8,
+      borderSkipped: false,
+    }],
+  });
+
+  barChartOptions: ChartConfiguration<'bar'>['options'] = {
+    responsive: true,
+    plugins: { legend: { display: false } },
     scales: {
-      y: { beginAtZero: true },
+      y: {
+        beginAtZero: true,
+        grid: { color: 'rgba(0,0,0,.04)' },
+        ticks: { font: { size: 11 } },
+      },
+      x: {
+        grid: { display: false },
+        ticks: { font: { size: 11 } },
+      },
     },
   };
 
   constructor(
     private supabase: SupabaseService,
-    private router: Router
+    private router: Router,
+    private toast: ToastService,
   ) {}
 
   ngOnInit() {
@@ -94,12 +153,26 @@ export class DashboardComponent implements OnInit {
   async loadDashboard() {
     this.loading.set(true);
     try {
-      const [meals, weeklyData] = await Promise.all([
+      const [meals, weeklyData, profile, workouts] = await Promise.all([
         this.supabase.getTodayMeals(),
         this.loadWeeklyData(),
+        this.supabase.getProfile(),
+        this.supabase.getTodayWorkouts(),
       ]);
 
+      if (profile) {
+        this.profile.set(profile);
+        if (profile.weight && profile.height && profile.age && profile.activity_level && profile.goal_type) {
+          const { tdee, bmr } = this.calculateTDEE(profile.weight, profile.height, profile.age, profile.gender ?? 'male', profile.activity_level, profile.goal_type);
+          this.tdee.set(tdee);
+          this.bmr.set(bmr);
+        }
+      }
+
       this.todayMeals.set(meals);
+      this.todayWorkouts.set(workouts);
+      const burned = workouts.reduce((sum, w) => sum + w.calories_burned, 0);
+      this.totalBurned.set(burned);
       this.calculateTotals(meals);
       this.updateWeeklyChart(weeklyData);
     } catch (err) {
@@ -107,6 +180,22 @@ export class DashboardComponent implements OnInit {
     } finally {
       this.loading.set(false);
     }
+  }
+
+  private calculateTDEE(weight: number, height: number, age: number, gender: string, activity: string, goal: string): { tdee: number; bmr: number } {
+    // Mifflin-St Jeor: Male +5, Female -161
+    const genderOffset = gender === 'female' ? -161 : 5;
+    const bmr = 10 * weight + 6.25 * height - 5 * age + genderOffset;
+    const multipliers: Record<string, number> = {
+      sedentary: 1.2,
+      light: 1.375,
+      moderate: 1.55,
+      active: 1.725,
+    };
+    let tdee = Math.round(bmr * (multipliers[activity] ?? 1.2));
+    if (goal === 'lose') tdee -= 500;
+    if (goal === 'gain') tdee += 300;
+    return { tdee: Math.max(1200, tdee), bmr: Math.round(bmr) };
   }
 
   private calculateTotals(meals: Meal[]) {
@@ -128,17 +217,19 @@ export class DashboardComponent implements OnInit {
     this.totalProtein.set(Math.round(protein));
     this.totalCarbs.set(Math.round(carb));
     this.totalFat.set(Math.round(fat));
-    this.remainingCalories.set(Math.max(0, this.tdee() - Math.round(calories)));
-    this.caloriePercent.set(Math.min(100, Math.round((calories / this.tdee()) * 100)));
+    // Remaining = goal - eaten + burned (exercise earns back calories)
+    const netCalories = Math.round(calories) - this.totalBurned();
+    this.remainingCalories.set(Math.max(0, this.tdee() - netCalories));
+    this.caloriePercent.set(Math.min(100, Math.round((netCalories / this.tdee()) * 100)));
 
-    this.pieChartData.set({
+    this.doughnutChartData.set({
       labels: ['Protein', 'Carbs', 'Fat'],
-      datasets: [
-        {
-          data: [Math.round(protein), Math.round(carb), Math.round(fat)],
-          backgroundColor: ['#4caf50', '#2196f3', '#ff9800'],
-        },
-      ],
+      datasets: [{
+        data: [Math.round(protein), Math.round(carb), Math.round(fat)],
+        backgroundColor: ['#00b894', '#0984e3', '#e17055'],
+        borderWidth: 0,
+        spacing: 2,
+      }],
     });
   }
 
@@ -183,18 +274,18 @@ export class DashboardComponent implements OnInit {
   }
 
   private updateWeeklyChart(weeklyData: { labels: string[]; data: number[] }) {
-    this.lineChartData.set({
+    this.barChartData.set({
       labels: weeklyData.labels,
-      datasets: [
-        {
-          data: weeklyData.data,
-          label: 'Calories',
-          borderColor: '#667eea',
-          backgroundColor: 'rgba(102,126,234,0.15)',
-          fill: true,
-          tension: 0.4,
-        },
-      ],
+      datasets: [{
+        data: weeklyData.data,
+        backgroundColor: weeklyData.data.map((_, i) =>
+          i === weeklyData.data.length - 1 ? 'rgba(108,92,231,.7)' : 'rgba(108,92,231,.2)'
+        ),
+        borderColor: '#6c5ce7',
+        borderWidth: 2,
+        borderRadius: 8,
+        borderSkipped: false,
+      }],
     });
   }
 
@@ -206,6 +297,20 @@ export class DashboardComponent implements OnInit {
       case 'snack': return 'cookie';
       default: return 'restaurant';
     }
+  }
+
+  formatThaiTime(utcStr?: string): string {
+    if (!utcStr) return '';
+    // Ensure the timestamp is treated as UTC if no timezone info present
+    let isoStr = utcStr;
+    if (!isoStr.endsWith('Z') && !/[+-]\d{2}:\d{2}$/.test(isoStr)) {
+      isoStr += 'Z';
+    }
+    return new Date(isoStr).toLocaleTimeString('en-GB', {
+      hour: '2-digit',
+      minute: '2-digit',
+      timeZone: 'Asia/Bangkok',
+    });
   }
 
   getMealCalories(meal: Meal): number {
@@ -236,8 +341,10 @@ export class DashboardComponent implements OnInit {
       this.todayMeals.set(updated);
       this.calculateTotals(updated);
       this.mealToDelete.set(null);
+      this.toast.success('Meal deleted');
     } catch (err) {
       console.error('Failed to delete meal', err);
+      this.toast.error('Failed to delete meal');
     } finally {
       this.deletingMealId.set(null);
     }

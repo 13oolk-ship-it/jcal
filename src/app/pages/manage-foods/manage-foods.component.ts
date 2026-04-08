@@ -5,9 +5,9 @@ import { Router, RouterModule } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { SupabaseService, Food } from '../../services/supabase.service';
+import { ToastService } from '../../services/toast.service';
 
 @Component({
   selector: 'app-manage-foods',
@@ -19,7 +19,6 @@ import { SupabaseService, Food } from '../../services/supabase.service';
     MatButtonModule,
     MatIconModule,
     MatProgressSpinnerModule,
-    MatSnackBarModule,
     MatTooltipModule,
   ],
   templateUrl: './manage-foods.component.html',
@@ -43,7 +42,7 @@ export class ManageFoodsComponent implements OnInit {
   constructor(
     private supabase: SupabaseService,
     private router: Router,
-    private snackBar: MatSnackBar,
+    private toast: ToastService,
   ) {}
 
   ngOnInit() {
@@ -104,10 +103,10 @@ export class ManageFoodsComponent implements OnInit {
       this.foods.update(list => list.map(f => f.id === food.id ? updated : f));
       this.applyFilter();
       this.editingFood.set(null);
-      this.snackBar.open('Food updated!', 'OK', { duration: 2500 });
+      this.toast.success('Food updated!');
     } catch (err) {
       console.error('Failed to update food', err);
-      this.snackBar.open('Failed to update', 'OK', { duration: 3000 });
+      this.toast.error('Failed to update');
     } finally {
       this.saving.set(false);
     }
@@ -132,10 +131,10 @@ export class ManageFoodsComponent implements OnInit {
       this.foods.update(list => list.filter(f => f.id !== food.id));
       this.applyFilter();
       this.foodToDelete.set(null);
-      this.snackBar.open('Food deleted', 'OK', { duration: 2500 });
+      this.toast.success('Food deleted');
     } catch (err) {
       console.error('Failed to delete food', err);
-      this.snackBar.open('Failed to delete — food may be used in meals', 'OK', { duration: 4000 });
+      this.toast.error('Failed to delete — food may be used in meals');
     } finally {
       this.deleting.set(false);
     }

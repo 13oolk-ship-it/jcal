@@ -8,6 +8,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatIconModule } from '@angular/material/icon';
 import { SupabaseService } from '../../services/supabase.service';
+import { ToastService } from '../../services/toast.service';
 
 @Component({
   selector: 'app-login',
@@ -33,7 +34,8 @@ export class LoginComponent {
 
   constructor(
     private supabase: SupabaseService,
-    private router: Router
+    private router: Router,
+    private toast: ToastService,
   ) {}
 
   toggleMode() {
@@ -55,6 +57,7 @@ export class LoginComponent {
         await this.supabase.signUp(this.email, this.password);
       }
       await this.supabase.signIn(this.email, this.password);
+      this.toast.success('Welcome back! 👋');
       this.router.navigate(['/dashboard']);
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'An error occurred';

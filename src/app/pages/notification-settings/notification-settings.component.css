@@ -1,0 +1,362 @@
+/* ══════════════════════════════════════════
+   Notification Settings — Mobile-First
+   ══════════════════════════════════════════ */
+
+.top-nav {
+  display: flex;
+  align-items: center;
+  padding: 10px 16px;
+  background: #fff;
+  border-bottom: 1px solid #f0f0f0;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.nav-title {
+  font-weight: 700;
+  font-size: 18px;
+  color: #1a1a2e;
+  margin-left: 4px;
+}
+
+.nav-spacer { flex: 1; }
+
+.settings-page {
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 20px 16px 80px;
+}
+
+.loading-center {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 40vh;
+}
+
+/* ── Alert Cards ── */
+.alert-card {
+  display: flex;
+  gap: 12px;
+  padding: 16px;
+  border-radius: 14px;
+  margin-bottom: 16px;
+}
+
+.alert-card.warning {
+  background: #fff3cd;
+  color: #856404;
+}
+
+.alert-card.warning mat-icon { color: #e17055; }
+
+.alert-card.error {
+  background: #f8d7da;
+  color: #721c24;
+}
+
+.alert-card.error mat-icon { color: #d63031; }
+
+.alert-card h4 {
+  margin: 0 0 4px;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.alert-card p {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.alert-card > mat-icon {
+  font-size: 28px;
+  width: 28px;
+  height: 28px;
+  margin-top: 2px;
+  flex-shrink: 0;
+}
+
+/* ── Settings Card ── */
+.settings-card {
+  background: #fff;
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, .06);
+  margin-bottom: 16px;
+  position: relative;
+}
+
+.step-badge {
+  position: absolute;
+  top: -10px;
+  left: 16px;
+  background: linear-gradient(135deg, #6c5ce7, #a29bfe);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 800;
+  padding: 3px 12px;
+  border-radius: 20px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.card-header {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  margin-bottom: 24px;
+}
+
+.card-icon-wrap {
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #6c5ce7, #a29bfe);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.card-icon-wrap.schedule {
+  background: linear-gradient(135deg, #0984e3, #74b9ff);
+}
+
+.card-icon-wrap.active-icon {
+  background: linear-gradient(135deg, #00b894, #55efc4);
+}
+
+.card-icon-wrap mat-icon {
+  color: #fff;
+  font-size: 24px;
+  width: 24px;
+  height: 24px;
+}
+
+.card-header h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+  color: #1a1a2e;
+}
+
+.card-desc {
+  margin: 4px 0 0;
+  font-size: 13px;
+  color: #636e72;
+}
+
+/* ── Toggle Row ── */
+.setting-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 0;
+  border-top: 1px solid #f0f0f0;
+}
+
+.setting-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 15px;
+  font-weight: 600;
+  color: #2d3436;
+}
+
+.setting-icon {
+  font-size: 22px;
+  width: 22px;
+  height: 22px;
+  color: #636e72;
+}
+
+.toggle-btn {
+  min-width: 64px;
+  height: 36px;
+  border-radius: 18px !important;
+  font-weight: 700;
+  font-size: 13px;
+  background: #dfe6e9 !important;
+  color: #636e72 !important;
+  transition: all 0.2s;
+}
+
+.toggle-btn.active {
+  background: linear-gradient(135deg, #6c5ce7, #a29bfe) !important;
+  color: #fff !important;
+}
+
+/* ── Time Section ── */
+.time-section {
+  padding-top: 18px;
+  border-top: 1px solid #f0f0f0;
+  margin-top: 4px;
+}
+
+.time-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #2d3436;
+  margin-bottom: 10px;
+}
+
+.time-label mat-icon {
+  font-size: 20px;
+  width: 20px;
+  height: 20px;
+  color: #6c5ce7;
+}
+
+.time-input-row {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.time-input {
+  flex: 1;
+  height: 48px;
+  border: 2px solid #dfe6e9;
+  border-radius: 12px;
+  padding: 0 14px;
+  font-size: 18px;
+  font-weight: 600;
+  color: #2d3436;
+  text-align: center;
+  background: #fafafa;
+  transition: border-color 0.2s;
+}
+
+.time-input:focus {
+  outline: none;
+  border-color: #6c5ce7;
+  background: #fff;
+}
+
+.save-time-btn {
+  height: 48px;
+  min-width: 80px;
+  border-radius: 12px !important;
+  font-weight: 700;
+  background: linear-gradient(135deg, #6c5ce7, #a29bfe) !important;
+  color: #fff !important;
+}
+
+.time-hint {
+  margin: 10px 0 0;
+  font-size: 13px;
+  color: #636e72;
+}
+
+/* ── Full-width Toggle Button ── */
+.full-toggle-btn {
+  width: 100%;
+  height: 52px;
+  border-radius: 14px !important;
+  font-weight: 700;
+  font-size: 15px;
+  background: #dfe6e9 !important;
+  color: #636e72 !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.2s;
+}
+
+.full-toggle-btn.active {
+  background: linear-gradient(135deg, #d63031, #e17055) !important;
+  color: #fff !important;
+}
+
+.full-toggle-btn:not(.active) {
+  background: linear-gradient(135deg, #00b894, #55efc4) !important;
+  color: #fff !important;
+}
+
+.full-toggle-btn:disabled {
+  opacity: 0.5;
+  background: #dfe6e9 !important;
+  color: #b2bec3 !important;
+}
+
+/* ── Status Banner ── */
+.status-banner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 14px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.status-banner.success {
+  background: #e8f8f5;
+  color: #00b894;
+}
+
+.status-banner mat-icon {
+  font-size: 20px;
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
+/* ── Save All Button ── */
+.save-all-btn {
+  width: 100%;
+  height: 52px;
+  border-radius: 14px !important;
+  font-weight: 700;
+  font-size: 16px;
+  background: linear-gradient(135deg, #6c5ce7, #a29bfe) !important;
+  color: #fff !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+/* ── Info Card ── */
+.info-card {
+  background: #f8f9ff;
+  border-radius: 14px;
+  padding: 18px;
+  border: 1px solid #e8e6ff;
+}
+
+.info-card h4 {
+  margin: 0 0 12px;
+  font-size: 15px;
+  font-weight: 700;
+  color: #6c5ce7;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.info-card h4 mat-icon {
+  font-size: 20px;
+  width: 20px;
+  height: 20px;
+}
+
+.info-card ul {
+  margin: 0;
+  padding-left: 20px;
+}
+
+.info-card li {
+  font-size: 13px;
+  color: #636e72;
+  line-height: 1.8;
+}

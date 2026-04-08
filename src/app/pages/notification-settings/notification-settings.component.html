@@ -1,0 +1,121 @@
+<!-- Top Nav -->
+<nav class="top-nav">
+  <button mat-icon-button (click)="goBack()">
+    <mat-icon>arrow_back</mat-icon>
+  </button>
+  <span class="nav-title">Notification Settings</span>
+  <div class="nav-spacer"></div>
+</nav>
+
+<div class="settings-page">
+  @if (loading()) {
+    <div class="loading-center"><mat-spinner diameter="40"></mat-spinner></div>
+  } @else {
+
+    <!-- Push Support Check -->
+    @if (!isSupported()) {
+      <section class="alert-card warning">
+        <mat-icon>warning</mat-icon>
+        <div>
+          <h4>Not Supported</h4>
+          <p>Push notifications are not supported on this browser. Try using Chrome, Edge, or Firefox on a mobile device.</p>
+        </div>
+      </section>
+    }
+
+    <!-- Permission Denied Alert -->
+    @if (isSupported() && permissionState() === 'denied') {
+      <section class="alert-card error">
+        <mat-icon>block</mat-icon>
+        <div>
+          <h4>Notifications Blocked</h4>
+          <p>You have blocked notifications for this site. Please enable them in your browser settings, then come back here.</p>
+        </div>
+      </section>
+    }
+
+    <!-- Step 1: Set Time -->
+    <section class="settings-card">
+      <div class="step-badge">Step 1</div>
+      <div class="card-header">
+        <div class="card-icon-wrap schedule"><mat-icon>schedule</mat-icon></div>
+        <div>
+          <h3>Set Reminder Time</h3>
+          <p class="card-desc">เลือกเวลาที่อยากให้แจ้งเตือนออกกำลังกาย</p>
+        </div>
+      </div>
+
+      <div class="time-section">
+        <div class="time-input-row">
+          <input
+            type="time"
+            class="time-input"
+            [ngModel]="reminderTime()"
+            (ngModelChange)="reminderTime.set($event)">
+        </div>
+        <p class="time-hint">⏰ ระบบจะส่ง notification ตามเวลานี้ (เวลาไทย)</p>
+      </div>
+    </section>
+
+    <!-- Step 2: Enable Push -->
+    <section class="settings-card">
+      <div class="step-badge">Step 2</div>
+      <div class="card-header">
+        <div class="card-icon-wrap" [class.active-icon]="isSubscribed()">
+          <mat-icon>{{ isSubscribed() ? 'notifications_active' : 'notifications' }}</mat-icon>
+        </div>
+        <div>
+          <h3>Enable Notifications</h3>
+          <p class="card-desc">เปิดรับ push notification เพื่อให้ระบบส่งแจ้งเตือนได้</p>
+        </div>
+      </div>
+
+      <button
+        mat-flat-button
+        [class]="isSubscribed() ? 'full-toggle-btn active' : 'full-toggle-btn'"
+        (click)="toggleAndSave()"
+        [disabled]="subscribing() || !isSupported() || permissionState() === 'denied'">
+        @if (subscribing()) {
+          <mat-spinner diameter="20"></mat-spinner>
+        } @else if (isSubscribed()) {
+          <ng-container><mat-icon>notifications_active</mat-icon> เปิดอยู่ — กดเพื่อปิด</ng-container>
+        } @else {
+          <ng-container><mat-icon>notifications_off</mat-icon> กดเพื่อเปิดแจ้งเตือน</ng-container>
+        }
+      </button>
+
+      @if (isSubscribed()) {
+        <div class="status-banner success">
+          <mat-icon>check_circle</mat-icon>
+          <span>จะแจ้งเตือนทุกวันเวลา <strong>{{ reminderTime() }} น.</strong></span>
+        </div>
+      }
+    </section>
+
+    <!-- Save Button (when subscribed & time changed) -->
+    @if (isSubscribed()) {
+      <button
+        mat-flat-button
+        class="save-all-btn"
+        (click)="saveReminderTime()"
+        [disabled]="saving()">
+        @if (saving()) {
+          <mat-spinner diameter="20"></mat-spinner>
+        } @else {
+          <ng-container><mat-icon>save</mat-icon> บันทึกเวลา</ng-container>
+        }
+      </button>
+    }
+
+    <!-- How it works -->
+    <section class="info-card">
+      <h4><mat-icon>info</mat-icon> วิธีการทำงาน</h4>
+      <ul>
+        <li><strong>ตั้งเวลา</strong> — เลือกเวลาที่ต้องการให้แจ้งเตือน</li>
+        <li><strong>เปิด Notification</strong> — กดอนุญาตให้ browser ส่ง push</li>
+        <li><strong>รับแจ้งเตือน</strong> — ระบบจะส่ง notification ทุกวันตามเวลาที่ตั้ง แม้ปิด browser แล้ว</li>
+      </ul>
+    </section>
+
+  }
+</div>

@@ -2,19 +2,29 @@
 <nav class="top-nav">
   <div class="nav-left">
     <mat-icon class="brand-icon">local_fire_department</mat-icon>
-    <span class="brand-name">NubCal</span>
+    <span class="brand-name">J-NubCal</span>
   </div>
   <div class="nav-right">
+    <button mat-icon-button routerLink="/notification-settings" matTooltip="Notifications">
+      <mat-icon>notifications</mat-icon>
+    </button>
     <button mat-icon-button routerLink="/manage-foods" matTooltip="Manage Foods">
       <mat-icon>restaurant_menu</mat-icon>
     </button>
     <button mat-icon-button routerLink="/add-food" matTooltip="Add Food">
       <mat-icon>add_circle_outline</mat-icon>
     </button>
-    <button mat-icon-button [matMenuTriggerFor]="menu">
-      <mat-icon>account_circle</mat-icon>
+    <button mat-icon-button [matMenuTriggerFor]="menu" class="avatar-btn">
+      @if (avatarUrl()) {
+        <img [src]="avatarUrl()" alt="Profile" class="nav-avatar">
+      } @else {
+        <mat-icon>account_circle</mat-icon>
+      }
     </button>
     <mat-menu #menu="matMenu">
+      <button mat-menu-item routerLink="/profile-setup">
+        <mat-icon>settings</mat-icon> Edit Profile
+      </button>
       <button mat-menu-item (click)="logout()">
         <mat-icon>logout</mat-icon> Logout
       </button>
@@ -26,99 +36,204 @@
   @if (loading()) {
     <div class="loading-center"><mat-spinner diameter="44"></mat-spinner></div>
   } @else {
-    <!-- Hero card with radial progress -->
+
+    <!-- ===== Greeting & Date ===== -->
+    <section class="greeting-section">
+      <div class="greeting-text">
+        <h1>Today's Summary</h1>
+        <p class="greeting-date">{{ today | date:'EEEE, MMMM d' }}</p>
+      </div>
+      <div class="greeting-badge" [style.background]="bmiColor() + '18'" [style.color]="bmiColor()">
+        BMI {{ bmiValue() }}
+      </div>
+    </section>
+
+    <!-- ===== Calorie Ring Hero ===== -->
     <section class="hero-card">
       <div class="hero-ring">
-        <svg viewBox="0 0 120 120" class="ring-svg">
-          <circle cx="60" cy="60" r="52" class="ring-bg"/>
-          <circle cx="60" cy="60" r="52" class="ring-fill"
-            [style.stroke-dasharray]="326.73"
-            [style.stroke-dashoffset]="326.73 - (326.73 * caloriePercent()) / 100"/>
+        <svg viewBox="0 0 140 140" class="ring-svg">
+          <circle cx="70" cy="70" r="60" class="ring-bg"/>
+          <circle cx="70" cy="70" r="60" class="ring-fill"
+            [style.stroke-dasharray]="376.99"
+            [style.stroke-dashoffset]="376.99 - (376.99 * caloriePercent()) / 100"/>
         </svg>
         <div class="ring-text">
           <span class="ring-value">{{ totalCalories() }}</span>
-          <span class="ring-label">kcal</span>
+          <span class="ring-unit">kcal</span>
+          <span class="ring-sub">of {{ tdee() }}</span>
         </div>
       </div>
-      <div class="hero-details">
-        <div class="hero-row">
-          <div class="detail-item">
-            <span class="detail-num remaining-color">{{ remainingCalories() }}</span>
-            <span class="detail-label">Remaining</span>
-          </div>
-          <div class="detail-divider"></div>
-          <div class="detail-item">
-            <span class="detail-num goal-color">{{ tdee() }}</span>
-            <span class="detail-label">Goal</span>
+
+      <div class="hero-stats">
+        <div class="hero-stat">
+          <mat-icon class="stat-icon eaten">local_dining</mat-icon>
+          <div class="stat-info">
+            <span class="stat-num">{{ totalCalories() }}</span>
+            <span class="stat-label">Eaten</span>
           </div>
         </div>
-        <div class="progress-bar-track">
-          <div class="progress-bar-fill" [style.width.%]="caloriePercent()"
-               [class.over]="caloriePercent() > 100"></div>
+        <div class="hero-divider"></div>
+        <div class="hero-stat">
+          <mat-icon class="stat-icon burned">local_fire_department</mat-icon>
+          <div class="stat-info">
+            <span class="stat-num burned-num">{{ totalBurned() }}</span>
+            <span class="stat-label">Burned</span>
+          </div>
+        </div>
+        <div class="hero-divider"></div>
+        <div class="hero-stat">
+          <mat-icon class="stat-icon remaining">battery_charging_full</mat-icon>
+          <div class="stat-info">
+            <span class="stat-num remaining-num">{{ remainingCalories() }}</span>
+            <span class="stat-label">Remaining</span>
+          </div>
         </div>
       </div>
     </section>
 
-    <!-- Quick Actions -->
+    <!-- ===== Quick Actions ===== -->
     <section class="actions-row">
       <button mat-flat-button class="action-btn primary-btn" routerLink="/add-meal">
         <mat-icon>add</mat-icon> Log Meal
       </button>
-      <button mat-flat-button class="action-btn outline-btn" routerLink="/add-food">
-        <mat-icon>fastfood</mat-icon> Add Food
+      <button mat-flat-button class="action-btn outline-btn" routerLink="/add-workout">
+        <mat-icon>fitness_center</mat-icon> Workout
       </button>
     </section>
 
-    <!-- Macros row -->
-    <section class="macros-row">
-      <div class="macro-pill protein">
-        <mat-icon>fitness_center</mat-icon>
-        <div><span class="macro-val">{{ totalProtein() }}g</span><span class="macro-name">Protein</span></div>
-      </div>
-      <div class="macro-pill carbs">
-        <mat-icon>grain</mat-icon>
-        <div><span class="macro-val">{{ totalCarbs() }}g</span><span class="macro-name">Carbs</span></div>
-      </div>
-      <div class="macro-pill fat">
-        <mat-icon>water_drop</mat-icon>
-        <div><span class="macro-val">{{ totalFat() }}g</span><span class="macro-name">Fat</span></div>
+    <!-- ===== Macros with Progress Bars ===== -->
+    <section class="macros-section">
+      <h3 class="section-title">Macros</h3>
+      <div class="macro-cards">
+        <div class="macro-card protein">
+          <div class="macro-header">
+            <div class="macro-icon-wrap protein-bg"><mat-icon>fitness_center</mat-icon></div>
+            <div class="macro-nums">
+              <span class="macro-current">{{ totalProtein() }}g</span>
+              <span class="macro-target">/ {{ proteinTarget() }}g</span>
+            </div>
+          </div>
+          <div class="macro-bar-track"><div class="macro-bar-fill protein-fill" [style.width.%]="proteinPercent()"></div></div>
+          <span class="macro-label">Protein</span>
+        </div>
+
+        <div class="macro-card carbs">
+          <div class="macro-header">
+            <div class="macro-icon-wrap carbs-bg"><mat-icon>grain</mat-icon></div>
+            <div class="macro-nums">
+              <span class="macro-current">{{ totalCarbs() }}g</span>
+              <span class="macro-target">/ {{ carbsTarget() }}g</span>
+            </div>
+          </div>
+          <div class="macro-bar-track"><div class="macro-bar-fill carbs-fill" [style.width.%]="carbsPercent()"></div></div>
+          <span class="macro-label">Carbs</span>
+        </div>
+
+        <div class="macro-card fat">
+          <div class="macro-header">
+            <div class="macro-icon-wrap fat-bg"><mat-icon>water_drop</mat-icon></div>
+            <div class="macro-nums">
+              <span class="macro-current">{{ totalFat() }}g</span>
+              <span class="macro-target">/ {{ fatTarget() }}g</span>
+            </div>
+          </div>
+          <div class="macro-bar-track"><div class="macro-bar-fill fat-fill" [style.width.%]="fatPercent()"></div></div>
+          <span class="macro-label">Fat</span>
+        </div>
       </div>
     </section>
 
-    <!-- Charts -->
-    <section class="charts-row">
+    <!-- ===== Profile Stats Cards ===== -->
+    <section class="profile-stats">
+      <h3 class="section-title">Your Profile</h3>
+      <div class="stat-grid">
+        <div class="stat-card">
+          <mat-icon class="sc-icon" [style.color]="profile()?.gender === 'female' ? '#e84393' : '#0984e3'">{{ profile()?.gender === 'female' ? 'female' : 'male' }}</mat-icon>
+          <span class="sc-value small-text">{{ genderLabel() }}</span>
+          <span class="sc-label">Gender</span>
+        </div>
+        <div class="stat-card">
+          <mat-icon class="sc-icon">monitor_weight</mat-icon>
+          <span class="sc-value">{{ profile()?.weight ?? '—' }}<small>kg</small></span>
+          <span class="sc-label">Weight</span>
+        </div>
+        <div class="stat-card">
+          <mat-icon class="sc-icon">height</mat-icon>
+          <span class="sc-value">{{ profile()?.height ?? '—' }}<small>cm</small></span>
+          <span class="sc-label">Height</span>
+        </div>
+        <div class="stat-card">
+          <mat-icon class="sc-icon">cake</mat-icon>
+          <span class="sc-value">{{ profile()?.age ?? '—' }}</span>
+          <span class="sc-label">Age</span>
+        </div>
+        <div class="stat-card">
+          <mat-icon class="sc-icon" [style.color]="bmiColor()">speed</mat-icon>
+          <span class="sc-value" [style.color]="bmiColor()">{{ bmiValue() }}</span>
+          <span class="sc-label">BMI · {{ bmiCategory() }}</span>
+        </div>
+        <div class="stat-card">
+          <mat-icon class="sc-icon">{{ goalIcon() }}</mat-icon>
+          <span class="sc-value small-text">{{ goalLabel() }}</span>
+          <span class="sc-label">Goal</span>
+        </div>
+        <div class="stat-card">
+          <mat-icon class="sc-icon">directions_run</mat-icon>
+          <span class="sc-value small-text">{{ activityLabel() }}</span>
+          <span class="sc-label">Activity</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== Charts ===== -->
+    <section class="charts-section">
       <div class="chart-box">
-        <h3>Macros</h3>
-        <div class="chart-canvas-wrap">
+        <div class="chart-header">
+          <h3>Macro Split</h3>
+          <div class="chart-legend">
+            <span class="legend-dot protein-dot"></span> Protein
+            <span class="legend-dot carbs-dot"></span> Carbs
+            <span class="legend-dot fat-dot"></span> Fat
+          </div>
+        </div>
+        <div class="chart-canvas-wrap doughnut-wrap">
           <canvas baseChart
-            [datasets]="pieChartData().datasets"
-            [labels]="pieChartData().labels"
-            [options]="pieChartOptions"
-            type="pie">
+            [datasets]="doughnutChartData().datasets"
+            [labels]="doughnutChartData().labels"
+            [options]="doughnutChartOptions"
+            type="doughnut">
           </canvas>
         </div>
       </div>
       <div class="chart-box">
-        <h3>This Week</h3>
-        <div class="chart-canvas-wrap">
+        <div class="chart-header">
+          <h3>This Week</h3>
+          <span class="chart-subtitle">Daily Calories</span>
+        </div>
+        <div class="chart-canvas-wrap bar-wrap">
           <canvas baseChart
-            [datasets]="lineChartData().datasets"
-            [labels]="lineChartData().labels"
-            [options]="lineChartOptions"
-            type="line">
+            [datasets]="barChartData().datasets"
+            [labels]="barChartData().labels"
+            [options]="barChartOptions"
+            type="bar">
           </canvas>
         </div>
       </div>
     </section>
 
-    <!-- Today's Meals -->
+    <!-- ===== Today's Meals ===== -->
     <section class="meals-section">
-      <h3>Today's Meals</h3>
+      <div class="meals-header">
+        <h3>Today's Meals</h3>
+        <span class="meals-count">{{ todayMeals().length }} meal{{ todayMeals().length !== 1 ? 's' : '' }}</span>
+      </div>
       @if (todayMeals().length === 0) {
         <div class="empty-state">
-          <mat-icon>restaurant_menu</mat-icon>
+          <div class="empty-icon-ring"><mat-icon>restaurant_menu</mat-icon></div>
           <p>No meals logged yet today</p>
-          <button mat-flat-button class="action-btn primary-btn" routerLink="/add-meal">Log a Meal</button>
+          <button mat-flat-button class="action-btn primary-btn small-btn" routerLink="/add-meal">
+            <mat-icon>add</mat-icon> Log Your First Meal
+          </button>
         </div>
       } @else {
         <div class="meal-list">
@@ -126,7 +241,10 @@
             <div class="meal-row" [class.deleting]="deletingMealId() === meal.id">
               <div class="meal-icon-wrap"><mat-icon>{{ getMealIcon(meal.meal_type) }}</mat-icon></div>
               <div class="meal-body">
-                <span class="meal-type">{{ meal.meal_type | titlecase }}</span>
+                <div class="meal-type-row">
+                  <span class="meal-type">{{ meal.meal_type | titlecase }}</span>
+                  <span class="meal-time">{{ formatThaiTime(meal.created_at) }}</span>
+                </div>
                 <span class="meal-foods">
                   @for (item of meal.meal_items; track item.id) {
                     {{ item.food?.name }} &times;{{ item.quantity }}{{ $last ? '' : ', ' }}
@@ -134,8 +252,7 @@
                 </span>
               </div>
               <span class="meal-kcal">{{ getMealCalories(meal) }}<small> kcal</small></span>
-              <button mat-icon-button class="meal-delete-btn" (click)="confirmDelete(meal)"
-                matTooltip="Delete meal">
+              <button mat-icon-button class="meal-delete-btn" (click)="confirmDelete(meal)" matTooltip="Delete meal">
                 <mat-icon>delete_outline</mat-icon>
               </button>
             </div>
@@ -146,11 +263,9 @@
         @if (mealToDelete()) {
           <div class="delete-overlay" (click)="cancelDelete()">
             <div class="delete-dialog" (click)="$event.stopPropagation()">
-              <div class="delete-dialog-icon">
-                <mat-icon>delete_forever</mat-icon>
-              </div>
+              <div class="delete-dialog-icon"><mat-icon>delete_forever</mat-icon></div>
               <h4>Delete this meal?</h4>
-              <p>{{ mealToDelete()!.meal_type | titlecase }} — {{ getMealCalories(mealToDelete()!) }} kcal will be removed from today's log.</p>
+              <p>{{ mealToDelete()!.meal_type | titlecase }} — {{ getMealCalories(mealToDelete()!) }} kcal will be removed.</p>
               <div class="delete-dialog-actions">
                 <button mat-flat-button class="cancel-btn" (click)="cancelDelete()">Cancel</button>
                 <button mat-flat-button class="confirm-delete-btn" (click)="deleteMeal()" [disabled]="deletingMealId()">

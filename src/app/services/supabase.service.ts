@@ -33,8 +33,29 @@ export interface Profile {
   weight?: number;
   height?: number;
   age?: number;
+  gender?: string;
   goal_type?: string;
   activity_level?: string;
+  avatar_url?: string;
+  reminder_enabled?: boolean;
+  workout_reminder_time?: string;
+  push_subscription?: string;
+  created_at?: string;
+}
+
+export interface Workout {
+  id?: number;
+  user_id?: string;
+  exercise_name: string;
+  category: 'cardio' | 'strength' | 'flexibility';
+  duration_min?: number;
+  calories_burned: number;
+  intensity?: string;
+  sets?: number;
+  reps?: number;
+  weight_kg?: number;
+  notes?: string;
+  date?: string;
   created_at?: string;
 }
 
@@ -111,6 +132,41 @@ export class SupabaseService {
       .single();
     if (error) throw error;
     return data;
+  }
+
+  async upsertProfile(profile: Partial<Omit<Profile, 'id' | 'created_at'>>): Promise<Profile> {
+    this.assertBrowser();
+    const user = await this.getUser();
+    if (!user) throw new Error('Not authenticated');
+    const { data, error } = await this.supabase
+      .from('profiles')
+      .upsert({ id: user.id, ...profile })
+      .select()
+      .single();
+    if (error) throw error;
+    return data;
+  }
+
+  // ─── Avatar ──────────────────────────────────────
+  async uploadAvatar(file: File): Promise<string> {
+    this.assertBrowser();
+    const user = await this.getUser();
+    if (!user) throw new Error('Not authenticated');
+    const ext = file.name.split('.').pop();
+    const path = `${user.id}/avatar.${ext}`;
+    const { error } = await this.supabase.storage
+      .from('avatars')
+      .upload(path, file, { upsert: true });
+    if (error) throw error;
+    const { data } = this.supabase.storage.from('avatars').getPublicUrl(path);
+    // Ensure URL contains /public/ segment for public bucket access
+    let url = data.publicUrl;
+    if (!url.includes('/object/public/')) {
+      url = url.replace('/object/', '/object/public/');
+    }
+    url += '?t=' + Date.now();
+    await this.upsertProfile({ avatar_url: url });
+    return url;
   }
 
   // ─── Foods ───────────────────────────────────────
@@ -230,5 +286,66 @@ export class SupabaseService {
       .lte('created_at', endDate + 'T23:59:59.999');
     if (error) throw error;
     return data ?? [];
+  }
+
+  // ─── Workouts ────────────────────────────────────
+  async addWorkout(workout: Omit<Workout, 'id' | 'user_id' | 'created_at'>): Promise<Workout> {
+    this.assertBrowser();
+    const user = await this.getUser();
+    if (!user) throw new Error('Not authenticated');
+    const { data, error } = await this.supabase
+      .from('workouts')
+      .insert({ ...workout, user_id: user.id })
+      .select()
+      .single();
+    if (error) throw error;
+    return data;
+  }
+
+  async getTodayWorkouts(): Promise<Workout[]> {
+    const user = await this.getUser();
+    if (!user) return [];
+    const today = new Date().toISOString().split('T')[0];
+    const { data, error } = await this.supabase
+      .from('workouts')
+      .select('*')
+      .eq('user_id', user.id)
+      .gte('created_at', today + 'T00:00:00')
+      .lt('created_at', today + 'T23:59:59.999')
+      .order('created_at', { ascending: false });
+    if (error) throw error;
+    return data ?? [];
+  }
+
+  async deleteWorkout(id: number): Promise<void> {
+    this.assertBrowser();
+    const { error } = await this.supabase
+      .from('workouts')
+      .delete()
+      .eq('id', id);
+    if (error) throw error;
+  }
+
+  // ─── Push Subscription ───────────────────────────
+  async savePushSubscription(subscription: PushSubscription): Promise<void> {
+    this.assertBrowser();
+    const user = await this.getUser();
+    if (!user) throw new Error('Not authenticated');
+    const { error } = await this.supabase
+      .from('profiles')
+      .update({ push_subscription: JSON.stringify(subscription) })
+      .eq('id', user.id);
+    if (error) throw error;
+  }
+
+  async removePushSubscription(): Promise<void> {
+    this.assertBrowser();
+    const user = await this.getUser();
+    if (!user) throw new Error('Not authenticated');
+    const { error } = await this.supabase
+      .from('profiles')
+      .update({ push_subscription: null, reminder_enabled: false })
+      .eq('id', user.id);
+    if (error) throw error;
   }
 }
