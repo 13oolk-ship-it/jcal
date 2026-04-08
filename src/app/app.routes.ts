@@ -46,6 +46,18 @@ export const routes: Routes = [
     data: { animation: 'AddWorkoutPage' },
   },
   {
+    path: 'manage-workouts',
+    loadComponent: () => import('./pages/manage-workouts/manage-workouts.component').then(m => m.ManageWorkoutsComponent),
+    canActivate: [authGuard, profileGuard],
+    data: { animation: 'ManageWorkoutsPage' },
+  },
+  {
+    path: 'manage-exercises',
+    loadComponent: () => import('./pages/manage-exercises/manage-exercises.component').then(m => m.ManageExercisesComponent),
+    canActivate: [authGuard, profileGuard],
+    data: { animation: 'ManageExercisesPage' },
+  },
+  {
     path: 'notification-settings',
     loadComponent: () => import('./pages/notification-settings/notification-settings.component').then(m => m.NotificationSettingsComponent),
     canActivate: [authGuard, profileGuard],

@@ -2,7 +2,7 @@
   <button mat-icon-button routerLink="/dashboard">
     <mat-icon>arrow_back</mat-icon>
   </button>
-  <span class="nav-title">Log Meal</span>
+  <span class="nav-title">{{ i18n.t('meal.title') }}</span>
   <div style="width:40px"></div>
 </nav>
 
@@ -12,8 +12,8 @@
       <div class="icon-circle">
         <mat-icon>restaurant</mat-icon>
       </div>
-      <h2>Log a Meal</h2>
-      <p>Select foods and quantities</p>
+      <h2>{{ i18n.t('meal.logAMeal') }}</h2>
+      <p>{{ i18n.t('meal.selectFoods') }}</p>
     </div>
 
     @if (loadingFoods()) {
@@ -26,16 +26,16 @@
             <button type="button" class="type-btn" [class.active]="mealType === type.value"
               (click)="mealType = type.value">
               <mat-icon>{{ type.icon }}</mat-icon>
-              <span>{{ type.label }}</span>
+              <span>{{ i18n.t(type.labelKey) }}</span>
             </button>
           }
         </div>
 
         <!-- Food Entries -->
         <div class="entries-header">
-          <span class="section-label">Food Items</span>
+          <span class="section-label">{{ i18n.t('meal.foodItems') }}</span>
           <button type="button" (click)="addEntry()" class="add-entry-btn">
-            <mat-icon>add</mat-icon> Add item
+            <mat-icon>add</mat-icon> {{ i18n.t('meal.addItem') }}
           </button>
         </div>
 
@@ -45,7 +45,7 @@
               <!-- Food selector -->
               <div class="food-card-top">
                 <mat-form-field appearance="outline" class="food-field-styled">
-                  <mat-label>Choose food</mat-label>
+                  <mat-label>{{ i18n.t('meal.chooseFood') }}</mat-label>
                   <mat-icon matPrefix class="field-icon">search</mat-icon>
                   <mat-select [(ngModel)]="entry.foodId" [name]="'food_' + i"
                     panelClass="food-select-panel">
@@ -53,7 +53,7 @@
                       @if (getFood(entry.foodId); as f) {
                         {{ f.name }}
                       } @else {
-                        <span class="placeholder-text">Select a food...</span>
+                        <span class="placeholder-text">{{ i18n.t('meal.selectFood') }}</span>
                       }
                     </mat-select-trigger>
                     @for (food of foods(); track food.id) {
@@ -108,16 +108,16 @@
 
         @if (foods().length === 0) {
           <div class="empty-foods">
-            <p>No foods yet — add some first!</p>
+            <p>{{ i18n.t('meal.noFoodsYet') }}</p>
             <button mat-flat-button type="button" routerLink="/add-food" class="outline-small">
-              <mat-icon>add_circle</mat-icon> Add Food
+              <mat-icon>add_circle</mat-icon> {{ i18n.t('dash.addFood') }}
             </button>
           </div>
         }
 
         <!-- Total -->
         <div class="total-bar">
-          <span>Estimated Total</span>
+          <span>{{ i18n.t('meal.estimatedTotal') }}</span>
           <span class="total-val">{{ getTotalCalories() }} kcal</span>
         </div>
 
@@ -132,7 +132,7 @@
           @if (loading()) {
             <mat-spinner diameter="22"></mat-spinner>
           } @else {
-            <ng-container>Log Meal</ng-container>
+            <ng-container>{{ i18n.t('meal.logMeal') }}</ng-container>
           }
         </button>
       </form>

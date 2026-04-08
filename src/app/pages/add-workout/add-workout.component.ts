@@ -7,15 +7,19 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { SupabaseService, Workout } from '../../services/supabase.service';
+import { MatTooltipModule } from '@angular/material/tooltip';
+import { SupabaseService, Workout, Exercise } from '../../services/supabase.service';
 import { ToastService } from '../../services/toast.service';
+import { I18nService } from '../../services/i18n.service';
 
 export interface ExercisePreset {
   name: string;
+  nameKey: string;
   icon: string;
   calPerMin: number; // base calories per minute (moderate intensity)
   category: 'cardio' | 'strength' | 'flexibility';
   muscle?: string;
+  muscleKey?: string;
 }
 
 @Component({
@@ -30,6 +34,7 @@ export interface ExercisePreset {
     MatFormFieldModule,
     MatInputModule,
     MatProgressSpinnerModule,
+    MatTooltipModule,
   ],
   templateUrl: './add-workout.component.html',
   styleUrl: './add-workout.component.css',
@@ -60,49 +65,52 @@ export class AddWorkoutComponent implements OnInit {
   notes = '';
 
   intensityOptions = [
-    { value: 'low' as const, label: 'Light', icon: 'sentiment_satisfied', multiplier: 0.6, color: '#00b894' },
-    { value: 'moderate' as const, label: 'Moderate', icon: 'sentiment_neutral', multiplier: 1.0, color: '#0984e3' },
-    { value: 'high' as const, label: 'Hard', icon: 'sentiment_very_dissatisfied', multiplier: 1.4, color: '#e17055' },
-    { value: 'intense' as const, label: 'Intense', icon: 'whatshot', multiplier: 1.8, color: '#d63031' },
+    { value: 'low' as const, labelKey: 'workout.light', icon: 'sentiment_satisfied', multiplier: 0.6, color: '#00b894' },
+    { value: 'moderate' as const, labelKey: 'workout.moderate', icon: 'sentiment_neutral', multiplier: 1.0, color: '#0984e3' },
+    { value: 'high' as const, labelKey: 'workout.hard', icon: 'sentiment_very_dissatisfied', multiplier: 1.4, color: '#e17055' },
+    { value: 'intense' as const, labelKey: 'workout.intense', icon: 'whatshot', multiplier: 1.8, color: '#d63031' },
   ];
 
   cardioExercises: ExercisePreset[] = [
-    { name: 'Running', icon: 'directions_run', calPerMin: 11, category: 'cardio' },
-    { name: 'Walking', icon: 'directions_walk', calPerMin: 4.5, category: 'cardio' },
-    { name: 'Cycling', icon: 'directions_bike', calPerMin: 8.5, category: 'cardio' },
-    { name: 'Swimming', icon: 'pool', calPerMin: 10, category: 'cardio' },
-    { name: 'Jump Rope', icon: 'sports', calPerMin: 12, category: 'cardio' },
-    { name: 'Elliptical', icon: 'fitness_center', calPerMin: 8, category: 'cardio' },
-    { name: 'Rowing', icon: 'rowing', calPerMin: 9, category: 'cardio' },
-    { name: 'Stair Climbing', icon: 'stairs', calPerMin: 10, category: 'cardio' },
-    { name: 'Dancing', icon: 'music_note', calPerMin: 6.5, category: 'cardio' },
+    { name: 'Running', nameKey: 'ex.running', icon: 'directions_run', calPerMin: 11, category: 'cardio' },
+    { name: 'Walking', nameKey: 'ex.walking', icon: 'directions_walk', calPerMin: 4.5, category: 'cardio' },
+    { name: 'Cycling', nameKey: 'ex.cycling', icon: 'directions_bike', calPerMin: 8.5, category: 'cardio' },
+    { name: 'Swimming', nameKey: 'ex.swimming', icon: 'pool', calPerMin: 10, category: 'cardio' },
+    { name: 'Jump Rope', nameKey: 'ex.jumpRope', icon: 'sports', calPerMin: 12, category: 'cardio' },
+    { name: 'Elliptical', nameKey: 'ex.elliptical', icon: 'fitness_center', calPerMin: 8, category: 'cardio' },
+    { name: 'Rowing', nameKey: 'ex.rowing', icon: 'rowing', calPerMin: 9, category: 'cardio' },
+    { name: 'Stair Climbing', nameKey: 'ex.stairClimbing', icon: 'stairs', calPerMin: 10, category: 'cardio' },
+    { name: 'Dancing', nameKey: 'ex.dancing', icon: 'music_note', calPerMin: 6.5, category: 'cardio' },
   ];
 
   strengthExercises: ExercisePreset[] = [
-    { name: 'Bench Press', icon: 'fitness_center', calPerMin: 5, category: 'strength', muscle: 'Chest' },
-    { name: 'Squats', icon: 'fitness_center', calPerMin: 6, category: 'strength', muscle: 'Legs' },
-    { name: 'Deadlift', icon: 'fitness_center', calPerMin: 6.5, category: 'strength', muscle: 'Back' },
-    { name: 'Shoulder Press', icon: 'fitness_center', calPerMin: 4.5, category: 'strength', muscle: 'Shoulders' },
-    { name: 'Bicep Curl', icon: 'fitness_center', calPerMin: 3.5, category: 'strength', muscle: 'Arms' },
-    { name: 'Lat Pulldown', icon: 'fitness_center', calPerMin: 4, category: 'strength', muscle: 'Back' },
-    { name: 'Leg Press', icon: 'fitness_center', calPerMin: 5.5, category: 'strength', muscle: 'Legs' },
-    { name: 'Tricep Dips', icon: 'fitness_center', calPerMin: 4, category: 'strength', muscle: 'Arms' },
-    { name: 'Push-ups', icon: 'fitness_center', calPerMin: 5, category: 'strength', muscle: 'Chest' },
+    { name: 'Bench Press', nameKey: 'ex.benchPress', icon: 'fitness_center', calPerMin: 5, category: 'strength', muscle: 'Chest', muscleKey: 'muscle.chest' },
+    { name: 'Squats', nameKey: 'ex.squats', icon: 'fitness_center', calPerMin: 6, category: 'strength', muscle: 'Legs', muscleKey: 'muscle.legs' },
+    { name: 'Deadlift', nameKey: 'ex.deadlift', icon: 'fitness_center', calPerMin: 6.5, category: 'strength', muscle: 'Back', muscleKey: 'muscle.back' },
+    { name: 'Shoulder Press', nameKey: 'ex.shoulderPress', icon: 'fitness_center', calPerMin: 4.5, category: 'strength', muscle: 'Shoulders', muscleKey: 'muscle.shoulders' },
+    { name: 'Bicep Curl', nameKey: 'ex.bicepCurl', icon: 'fitness_center', calPerMin: 3.5, category: 'strength', muscle: 'Arms', muscleKey: 'muscle.arms' },
+    { name: 'Lat Pulldown', nameKey: 'ex.latPulldown', icon: 'fitness_center', calPerMin: 4, category: 'strength', muscle: 'Back', muscleKey: 'muscle.back' },
+    { name: 'Leg Press', nameKey: 'ex.legPress', icon: 'fitness_center', calPerMin: 5.5, category: 'strength', muscle: 'Legs', muscleKey: 'muscle.legs' },
+    { name: 'Tricep Dips', nameKey: 'ex.tricepDips', icon: 'fitness_center', calPerMin: 4, category: 'strength', muscle: 'Arms', muscleKey: 'muscle.arms' },
+    { name: 'Push-ups', nameKey: 'ex.pushups', icon: 'fitness_center', calPerMin: 5, category: 'strength', muscle: 'Chest', muscleKey: 'muscle.chest' },
   ];
 
   flexibilityExercises: ExercisePreset[] = [
-    { name: 'Yoga', icon: 'self_improvement', calPerMin: 3.5, category: 'flexibility' },
-    { name: 'Stretching', icon: 'accessibility_new', calPerMin: 2.5, category: 'flexibility' },
-    { name: 'Pilates', icon: 'self_improvement', calPerMin: 4, category: 'flexibility' },
-    { name: 'Foam Rolling', icon: 'sports_gymnastics', calPerMin: 2, category: 'flexibility' },
+    { name: 'Yoga', nameKey: 'ex.yoga', icon: 'self_improvement', calPerMin: 3.5, category: 'flexibility' },
+    { name: 'Stretching', nameKey: 'ex.stretching', icon: 'accessibility_new', calPerMin: 2.5, category: 'flexibility' },
+    { name: 'Pilates', nameKey: 'ex.pilates', icon: 'self_improvement', calPerMin: 4, category: 'flexibility' },
+    { name: 'Foam Rolling', nameKey: 'ex.foamRolling', icon: 'sports_gymnastics', calPerMin: 2, category: 'flexibility' },
   ];
 
+  customExercises = signal<ExercisePreset[]>([]);
+
   exercises = computed(() => {
-    switch (this.activeCategory()) {
-      case 'cardio': return this.cardioExercises;
-      case 'strength': return this.strengthExercises;
-      case 'flexibility': return this.flexibilityExercises;
-    }
+    const cat = this.activeCategory();
+    const defaults = cat === 'cardio' ? this.cardioExercises
+      : cat === 'strength' ? this.strengthExercises
+      : this.flexibilityExercises;
+    const custom = this.customExercises().filter(e => e.category === cat);
+    return [...defaults, ...custom];
   });
 
   estimatedCalories = computed(() => {
@@ -129,17 +137,32 @@ export class AddWorkoutComponent implements OnInit {
     private supabase: SupabaseService,
     private router: Router,
     private toast: ToastService,
+    public i18n: I18nService,
   ) {}
 
   ngOnInit() {
-    this.loadTodayWorkouts();
+    this.loadData();
   }
 
-  async loadTodayWorkouts() {
+  async loadData() {
     this.loading.set(true);
     try {
-      const workouts = await this.supabase.getTodayWorkouts();
+      const [workouts, exercises] = await Promise.all([
+        this.supabase.getTodayWorkouts(),
+        this.supabase.getExercises(),
+      ]);
       this.todayWorkouts.set(workouts);
+      this.customExercises.set(
+        exercises.map(e => ({
+          name: e.name,
+          nameKey: '',
+          icon: e.icon,
+          calPerMin: e.cal_per_min,
+          category: e.category,
+          muscle: e.muscle,
+          muscleKey: '',
+        }))
+      );
     } catch {
       // ignore
     } finally {
@@ -194,7 +217,8 @@ export class AddWorkoutComponent implements OnInit {
 
       const saved = await this.supabase.addWorkout(workout);
       this.todayWorkouts.update(list => [saved, ...list]);
-      this.toast.success(`${ex.name} logged — ${this.estimatedCalories()} kcal burned 🔥`);
+      const displayName = ex.nameKey ? this.i18n.t(ex.nameKey) : ex.name;
+      this.toast.success(`${displayName} ${this.i18n.t('workout.logged')} — ${this.estimatedCalories()} ${this.i18n.t('workout.kcalBurned')} 🔥`);
       this.selectedExercise.set(null);
     } catch (err: unknown) {
       this.toast.error(err instanceof Error ? err.message : 'Failed to log workout');
@@ -209,9 +233,9 @@ export class AddWorkoutComponent implements OnInit {
     try {
       await this.supabase.deleteWorkout(workout.id);
       this.todayWorkouts.update(list => list.filter(w => w.id !== workout.id));
-      this.toast.success('Workout deleted');
+      this.toast.success(this.i18n.t('workout.deleted'));
     } catch {
-      this.toast.error('Failed to delete');
+      this.toast.error(this.i18n.t('workout.failedDelete'));
     } finally {
       this.deletingId.set(null);
     }

@@ -3,14 +3,14 @@
   align-items: center;
   justify-content: space-between;
   padding: 12px 20px;
-  background: #fff;
-  border-bottom: 1px solid #f0f0f0;
+  background: var(--bg-card);
+  border-bottom: 1px solid var(--border);
   position: sticky;
   top: 0;
   z-index: 100;
 }
 
-.nav-title { font-weight: 700; font-size: 18px; color: #1a1a2e; }
+.nav-title { font-weight: 700; font-size: 18px; color: var(--text-primary); }
 
 .page {
   max-width: 520px;
@@ -19,7 +19,7 @@
 }
 
 .form-card {
-  background: #fff;
+  background: var(--bg-card);
   border-radius: 20px;
   padding: 32px 28px;
   box-shadow: 0 2px 12px rgba(0,0,0,.06);
@@ -35,7 +35,7 @@
   height: 56px;
   margin: 0 auto 12px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #6c5ce7, #a29bfe);
+  background: var(--gradient-accent);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -43,8 +43,8 @@
 
 .icon-circle mat-icon { color: #fff; font-size: 26px; width: 26px; height: 26px; }
 
-.card-header h2 { margin: 0; font-size: 22px; font-weight: 700; color: #1a1a2e; }
-.card-header p { margin: 4px 0 0; color: #888; font-size: 14px; }
+.card-header h2 { margin: 0; font-size: 22px; font-weight: 700; color: var(--text-primary); }
+.card-header p { margin: 4px 0 0; color: var(--text-secondary); font-size: 14px; }
 
 /* ── AI Scanner Section ── */
 .scanner-section { margin-bottom: 8px; }
@@ -62,12 +62,12 @@
   padding: 14px 16px;
   border-radius: 14px;
   border: 1.5px dashed #ddd;
-  background: #fafbfd;
+  background: var(--bg-input);
   cursor: pointer;
   transition: all .2s;
 }
 
-.scan-btn:hover { border-color: #6c5ce7; background: #f8f7ff; }
+.scan-btn:hover { border-color: var(--accent); background: var(--accent-surface); }
 
 .scan-btn-icon {
   width: 42px;
@@ -79,23 +79,23 @@
   flex-shrink: 0;
 }
 
-.camera-btn .scan-btn-icon { background: #f0edff; }
-.camera-btn .scan-btn-icon mat-icon { color: #6c5ce7; }
+.camera-btn .scan-btn-icon { background: var(--accent-bg); }
+.camera-btn .scan-btn-icon mat-icon { color: var(--accent); }
 .upload-btn .scan-btn-icon { background: #e3f2fd; }
 .upload-btn .scan-btn-icon mat-icon { color: #1976d2; }
 
 .scan-btn-icon mat-icon { font-size: 22px; width: 22px; height: 22px; }
 
 .scan-btn-text { display: flex; flex-direction: column; text-align: left; }
-.scan-btn-title { font-weight: 600; font-size: 13px; color: #1a1a2e; }
-.scan-btn-sub { font-size: 11px; color: #999; margin-top: 1px; }
+.scan-btn-title { font-weight: 600; font-size: 13px; color: var(--text-primary); }
+.scan-btn-sub { font-size: 11px; color: var(--text-tertiary); margin-top: 1px; }
 
 /* Preview card */
 .preview-card {
   border-radius: 16px;
   overflow: hidden;
-  border: 1.5px solid #e8e5ff;
-  background: #fcfbff;
+  border: 1.5px solid var(--accent-surface-border);
+  background: var(--accent-surface);
 }
 
 .preview-img-wrap {
@@ -103,7 +103,7 @@
   width: 100%;
   max-height: 220px;
   overflow: hidden;
-  background: #f0f0f0;
+  background: var(--border);
 }
 
 .preview-img {
@@ -117,7 +117,7 @@
 .scan-overlay {
   position: absolute;
   inset: 0;
-  background: rgba(108, 92, 231, .08);
+  background: rgba(from var(--accent) r g b / .08);
 }
 
 .scan-line {
@@ -125,7 +125,7 @@
   left: 0;
   right: 0;
   height: 3px;
-  background: linear-gradient(90deg, transparent, #6c5ce7, transparent);
+  background: linear-gradient(90deg, transparent, var(--accent), transparent);
   box-shadow: 0 0 12px rgba(108, 92, 231, .5);
   animation: scanMove 1.8s ease-in-out infinite;
 }
@@ -147,7 +147,7 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  color: #6c5ce7;
+  color: var(--accent);
   font-weight: 600;
   font-size: 13px;
   padding: 4px 0;
@@ -174,7 +174,7 @@
   padding: 10px 18px;
   border-radius: 10px;
   border: none;
-  background: linear-gradient(135deg, #6c5ce7, #a29bfe);
+  background: var(--gradient-accent);
   color: #fff;
   font-weight: 600;
   font-size: 13px;
@@ -192,15 +192,15 @@
   padding: 8px 14px;
   border-radius: 10px;
   border: none;
-  background: #f5f5f5;
-  color: #888;
+  background: var(--bg-subtle);
+  color: var(--text-secondary);
   font-size: 12px;
   font-weight: 600;
   cursor: pointer;
   transition: all .2s;
 }
 
-.clear-preview-btn:hover { background: #eee; color: #666; }
+.clear-preview-btn:hover { background: #eee; color: var(--text-secondary); }
 .clear-preview-btn mat-icon { font-size: 16px; width: 16px; height: 16px; }
 
 .scan-error {
@@ -224,7 +224,7 @@
   align-items: center;
   gap: 14px;
   margin: 16px 0;
-  color: #bbb;
+  color: var(--text-muted);
   font-size: 12px;
   font-weight: 600;
   text-transform: uppercase;
@@ -253,12 +253,12 @@
   font-size: 16px;
   font-weight: 600;
   border-radius: 14px;
-  background: #6c5ce7;
+  background: var(--accent);
   color: #fff;
   margin-top: 8px;
 }
 
-.submit-btn:hover:not(:disabled) { background: #5a4bd1; }
+.submit-btn:hover:not(:disabled) { background: var(--accent-dark); }
 
 .error-msg {
   display: flex;

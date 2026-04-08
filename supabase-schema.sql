@@ -119,7 +119,75 @@ create policy "Users can delete own meal items"
     )
   );
 
--- 5. Indexes for performance
+-- 5. Add language preference to profiles
+alter table public.profiles add column if not exists language text not null default 'en' check (language in ('en', 'th'));
+
+-- 5b. Add theme preference to profiles
+alter table public.profiles add column if not exists theme text not null default 'violet' check (theme in ('violet', 'dark', 'ocean', 'rose', 'forest'));
+
+-- 6. Indexes for performance
 create index if not exists idx_meals_user_date on public.meals(user_id, date);
 create index if not exists idx_meal_items_meal on public.meal_items(meal_id);
 create index if not exists idx_foods_user on public.foods(user_id);
+
+-- 7. Exercises table (user custom exercise presets)
+create table if not exists public.exercises (
+  id bigint generated always as identity primary key,
+  user_id uuid references auth.users(id) on delete cascade not null,
+  name text not null,
+  icon text not null default 'fitness_center',
+  cal_per_min numeric not null default 5,
+  category text not null check (category in ('cardio', 'strength', 'flexibility')),
+  muscle text,
+  created_at timestamptz default now()
+);
+
+alter table public.exercises enable row level security;
+
+create policy "Users can view own exercises"
+  on public.exercises for select
+  using (auth.uid() = user_id);
+
+create policy "Users can insert own exercises"
+  on public.exercises for insert
+  with check (auth.uid() = user_id);
+
+create policy "Users can update own exercises"
+  on public.exercises for update
+  using (auth.uid() = user_id);
+
+create policy "Users can delete own exercises"
+  on public.exercises for delete
+  using (auth.uid() = user_id);
+
+create index if not exists idx_exercises_user on public.exercises(user_id);
+
+-- 8. Weight logs table (daily weight tracking)
+create table if not exists public.weight_logs (
+  id bigint generated always as identity primary key,
+  user_id uuid references auth.users(id) on delete cascade not null,
+  weight numeric not null check (weight > 0 and weight < 500),
+  date date not null default current_date,
+  created_at timestamptz default now(),
+  unique(user_id, date)
+);
+
+alter table public.weight_logs enable row level security;
+
+create policy "Users can view own weight logs"
+  on public.weight_logs for select
+  using (auth.uid() = user_id);
+
+create policy "Users can insert own weight logs"
+  on public.weight_logs for insert
+  with check (auth.uid() = user_id);
+
+create policy "Users can update own weight logs"
+  on public.weight_logs for update
+  using (auth.uid() = user_id);
+
+create policy "Users can delete own weight logs"
+  on public.weight_logs for delete
+  using (auth.uid() = user_id);
+
+create index if not exists idx_weight_logs_user_date on public.weight_logs(user_id, date);

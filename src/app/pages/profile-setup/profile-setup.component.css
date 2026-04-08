@@ -26,7 +26,7 @@
   height: 88px;
   margin: 0 auto 16px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #6c5ce7, #a29bfe);
+  background: var(--gradient-accent);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -34,7 +34,7 @@
   cursor: pointer;
   overflow: visible;
   transition: transform .15s ease, box-shadow .2s ease;
-  box-shadow: 0 4px 16px rgba(108, 92, 231, .25);
+  box-shadow: 0 4px 16px rgba(from var(--accent) r g b / .25);
 }
 
 .avatar-upload:hover {
@@ -71,7 +71,7 @@
   width: 30px;
   height: 30px;
   border-radius: 50%;
-  background: #fff;
+  background: var(--bg-card);
   box-shadow: 0 2px 8px rgba(0, 0, 0, .15);
   display: flex;
   align-items: center;
@@ -82,19 +82,19 @@
   font-size: 16px;
   width: 16px;
   height: 16px;
-  color: #6c5ce7;
+  color: var(--accent);
 }
 
 .setup-header h1 {
   font-size: 24px;
   font-weight: 800;
-  color: #1a1a2e;
+  color: var(--text-primary);
   margin: 0 0 6px;
 }
 
 .setup-header p {
   font-size: 14px;
-  color: #888;
+  color: var(--text-secondary);
   margin: 0;
   line-height: 1.5;
 }
@@ -117,13 +117,13 @@
 }
 
 .step-dot.active {
-  background: #6c5ce7;
+  background: var(--accent);
 }
 
 .step-dot.current {
   width: 14px;
   height: 14px;
-  box-shadow: 0 0 0 4px rgba(108, 92, 231, .2);
+  box-shadow: 0 0 0 4px rgba(from var(--accent) r g b / .2);
 }
 
 .step-line {
@@ -135,12 +135,12 @@
 }
 
 .step-line.active {
-  background: #6c5ce7;
+  background: var(--accent);
 }
 
 /* ── Step Card ── */
 .step-card {
-  background: #fff;
+  background: var(--bg-card);
   border-radius: 20px;
   padding: 24px;
   box-shadow: 0 2px 12px rgba(0, 0, 0, .06);
@@ -153,12 +153,12 @@
   gap: 8px;
   font-size: 18px;
   font-weight: 700;
-  color: #1a1a2e;
+  color: var(--text-primary);
   margin: 0 0 20px;
 }
 
 .step-card h2 mat-icon {
-  color: #6c5ce7;
+  color: var(--accent);
   font-size: 24px;
   width: 24px;
   height: 24px;
@@ -173,7 +173,7 @@
   display: block;
   font-size: 13px;
   font-weight: 600;
-  color: #888;
+  color: var(--text-secondary);
   text-transform: uppercase;
   letter-spacing: .5px;
   margin-bottom: 10px;
@@ -191,21 +191,21 @@
   gap: 12px;
   padding: 14px 18px;
   border-radius: 16px;
-  border: 2px solid #f0f0f0;
-  background: #fff;
+  border: 2px solid var(--border);
+  background: var(--bg-card);
   cursor: pointer;
   transition: all .2s ease;
 }
 
 .gender-card:hover {
-  border-color: #d0cbff;
-  background: #faf9ff;
+  border-color: var(--accent-border);
+  background: var(--accent-surface);
 }
 
 .gender-card.selected {
-  border-color: #6c5ce7;
-  background: #f0edff;
-  box-shadow: 0 2px 12px rgba(108, 92, 231, .15);
+  border-color: var(--accent);
+  background: var(--accent-bg);
+  box-shadow: 0 2px 12px rgba(from var(--accent) r g b / .15);
 }
 
 .gender-icon-wrap {
@@ -245,7 +245,7 @@
 .gender-text {
   font-size: 15px;
   font-weight: 700;
-  color: #1a1a2e;
+  color: var(--text-primary);
 }
 
 /* ── Form ── */
@@ -278,45 +278,45 @@
   gap: 8px;
   padding: 20px 12px;
   border-radius: 16px;
-  border: 2px solid #f0f0f0;
-  background: #fff;
+  border: 2px solid var(--border);
+  background: var(--bg-card);
   cursor: pointer;
   transition: all .2s ease;
   text-align: center;
 }
 
 .option-card:hover {
-  border-color: #d0cbff;
-  background: #faf9ff;
+  border-color: var(--accent-border);
+  background: var(--accent-surface);
 }
 
 .option-card.selected {
-  border-color: #6c5ce7;
-  background: #f0edff;
-  box-shadow: 0 2px 12px rgba(108, 92, 231, .15);
+  border-color: var(--accent);
+  background: var(--accent-bg);
+  box-shadow: 0 2px 12px rgba(from var(--accent) r g b / .15);
 }
 
 .option-card mat-icon {
   font-size: 28px;
   width: 28px;
   height: 28px;
-  color: #888;
+  color: var(--text-secondary);
   transition: color .2s;
 }
 
 .option-card.selected mat-icon {
-  color: #6c5ce7;
+  color: var(--accent);
 }
 
 .option-label {
   font-size: 14px;
   font-weight: 700;
-  color: #1a1a2e;
+  color: var(--text-primary);
 }
 
 .option-desc {
   font-size: 11px;
-  color: #999;
+  color: var(--text-tertiary);
   line-height: 1.3;
 }
 
@@ -336,7 +336,7 @@
 }
 
 .check-icon {
-  color: #6c5ce7 !important;
+  color: var(--accent) !important;
   font-size: 24px !important;
   width: 24px !important;
   height: 24px !important;
@@ -367,8 +367,8 @@
 .back-btn {
   height: 50px;
   border-radius: 14px !important;
-  background: #f5f5f5 !important;
-  color: #666 !important;
+  background: var(--bg-subtle) !important;
+  color: var(--text-secondary) !important;
   font-weight: 600;
   font-size: 15px;
   padding: 0 24px !important;
@@ -381,7 +381,7 @@
 .save-btn {
   height: 50px;
   border-radius: 14px !important;
-  background: linear-gradient(135deg, #6c5ce7, #a29bfe) !important;
+  background: var(--gradient-accent) !important;
   color: #fff !important;
   font-weight: 700;
   font-size: 15px;
@@ -389,7 +389,7 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  box-shadow: 0 4px 14px rgba(108, 92, 231, .3);
+  box-shadow: 0 4px 14px rgba(from var(--accent) r g b / .3);
   transition: transform .15s ease, box-shadow .2s ease;
 }
 
@@ -441,7 +441,7 @@
 }
 
 .crop-dialog {
-  background: #fff;
+  background: var(--bg-card);
   border-radius: 20px;
   padding: 24px;
   width: 100%;
@@ -455,7 +455,7 @@
 .crop-title {
   font-size: 18px;
   font-weight: 700;
-  color: #1a1a2e;
+  color: var(--text-primary);
   margin: 0 0 16px;
   text-align: center;
 }
@@ -464,7 +464,7 @@
   border-radius: 12px;
   overflow: hidden;
   margin-bottom: 20px;
-  --cropper-outline-color: rgba(108, 92, 231, .25);
+  --cropper-outline-color: rgba(from var(--accent) r g b / .25);
 }
 
 .crop-actions {
@@ -476,8 +476,8 @@
 .crop-cancel-btn {
   height: 46px;
   border-radius: 14px !important;
-  background: #f5f5f5 !important;
-  color: #666 !important;
+  background: var(--bg-subtle) !important;
+  color: var(--text-secondary) !important;
   font-weight: 600;
   font-size: 14px;
   padding: 0 24px !important;
@@ -489,7 +489,7 @@
 .crop-confirm-btn {
   height: 46px;
   border-radius: 14px !important;
-  background: linear-gradient(135deg, #6c5ce7, #a29bfe) !important;
+  background: var(--gradient-accent) !important;
   color: #fff !important;
   font-weight: 700;
   font-size: 14px;
@@ -497,7 +497,7 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  box-shadow: 0 4px 14px rgba(108, 92, 231, .3);
+  box-shadow: 0 4px 14px rgba(from var(--accent) r g b / .3);
 }
 
 .crop-confirm-btn:disabled {

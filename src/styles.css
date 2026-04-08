@@ -5,6 +5,161 @@
 
 @import 'tailwindcss';
 
+/* ══════════════════════════════════════════
+   Theme System — CSS Custom Properties
+   ══════════════════════════════════════════ */
+
+/* ── 1. Violet (Default Light) ── */
+:root,
+[data-theme="violet"] {
+  --bg-page: #f7f8fc;
+  --bg-card: #fff;
+  --bg-input: #fafbfd;
+  --bg-subtle: #f5f5f5;
+  --text-primary: #1a1a2e;
+  --text-secondary: #888;
+  --text-tertiary: #999;
+  --text-muted: #bbb;
+  --text-hint: #aaa;
+  --border: #f0f0f0;
+  --border-light: #eee;
+  --accent: #6c5ce7;
+  --accent-light: #a29bfe;
+  --accent-bg: #f0edff;
+  --accent-bg-hover: #e4dfff;
+  --accent-border: #d0cbff;
+  --accent-surface: #faf9ff;
+  --accent-surface-border: #e8e5ff;
+  --accent-dark: #5a4bd1;
+  --gradient-accent: linear-gradient(135deg, #6c5ce7, #a29bfe);
+  --shadow-card: 0 2px 12px rgba(0,0,0,.06);
+  --shadow-sm: 0 1px 6px rgba(0,0,0,.05);
+  --overlay-bg: rgba(0,0,0,.35);
+  --dialog-bg: #fff;
+  --badge-bg: #f5f5f7;
+  color-scheme: light;
+}
+
+/* ── 2. Dark ── */
+[data-theme="dark"] {
+  --bg-page: #0f0f14;
+  --bg-card: #1a1a24;
+  --bg-input: #22222e;
+  --bg-subtle: #252532;
+  --text-primary: #e8e8f0;
+  --text-secondary: #9898a8;
+  --text-tertiary: #787888;
+  --text-muted: #5a5a6e;
+  --text-hint: #6a6a7e;
+  --border: #2a2a38;
+  --border-light: #252532;
+  --accent: #a29bfe;
+  --accent-light: #c4bfff;
+  --accent-bg: rgba(162, 155, 254, .12);
+  --accent-bg-hover: rgba(162, 155, 254, .18);
+  --accent-border: rgba(162, 155, 254, .25);
+  --accent-surface: rgba(162, 155, 254, .06);
+  --accent-surface-border: rgba(162, 155, 254, .15);
+  --accent-dark: #8b82f0;
+  --gradient-accent: linear-gradient(135deg, #7c6df0, #a29bfe);
+  --shadow-card: 0 2px 12px rgba(0,0,0,.3);
+  --shadow-sm: 0 1px 6px rgba(0,0,0,.25);
+  --overlay-bg: rgba(0,0,0,.6);
+  --dialog-bg: #1a1a24;
+  --badge-bg: #252532;
+  color-scheme: dark;
+}
+
+/* ── 3. Ocean ── */
+[data-theme="ocean"] {
+  --bg-page: #f0f7ff;
+  --bg-card: #fff;
+  --bg-input: #f5f9ff;
+  --bg-subtle: #e8f0fb;
+  --text-primary: #1a2a3e;
+  --text-secondary: #6b8299;
+  --text-tertiary: #8899aa;
+  --text-muted: #a0b4c8;
+  --text-hint: #90a8be;
+  --border: #dce8f4;
+  --border-light: #e8f0f8;
+  --accent: #0984e3;
+  --accent-light: #74b9ff;
+  --accent-bg: #e3f2fd;
+  --accent-bg-hover: #d0e8fc;
+  --accent-border: #a8d4f7;
+  --accent-surface: #f0f8ff;
+  --accent-surface-border: #cce4f8;
+  --accent-dark: #0770c4;
+  --gradient-accent: linear-gradient(135deg, #0984e3, #74b9ff);
+  --shadow-card: 0 2px 12px rgba(9, 132, 227, .08);
+  --shadow-sm: 0 1px 6px rgba(9, 132, 227, .06);
+  --overlay-bg: rgba(0,0,0,.35);
+  --dialog-bg: #fff;
+  --badge-bg: #e8f0f8;
+  color-scheme: light;
+}
+
+/* ── 4. Rose ── */
+[data-theme="rose"] {
+  --bg-page: #fdf5f8;
+  --bg-card: #fff;
+  --bg-input: #fef8fa;
+  --bg-subtle: #fce8ef;
+  --text-primary: #2e1a24;
+  --text-secondary: #99707e;
+  --text-tertiary: #aa8894;
+  --text-muted: #c8a0b0;
+  --text-hint: #be90a4;
+  --border: #f4dce4;
+  --border-light: #f8e8ee;
+  --accent: #e84393;
+  --accent-light: #fd79a8;
+  --accent-bg: #fce4ec;
+  --accent-bg-hover: #fad0dc;
+  --accent-border: #f7a8c4;
+  --accent-surface: #fef5f8;
+  --accent-surface-border: #f8d0de;
+  --accent-dark: #d63384;
+  --gradient-accent: linear-gradient(135deg, #e84393, #fd79a8);
+  --shadow-card: 0 2px 12px rgba(232, 67, 147, .08);
+  --shadow-sm: 0 1px 6px rgba(232, 67, 147, .06);
+  --overlay-bg: rgba(0,0,0,.35);
+  --dialog-bg: #fff;
+  --badge-bg: #f8e8ee;
+  color-scheme: light;
+}
+
+/* ── 5. Forest ── */
+[data-theme="forest"] {
+  --bg-page: #f2faf7;
+  --bg-card: #fff;
+  --bg-input: #f5fcf9;
+  --bg-subtle: #e0f2ec;
+  --text-primary: #1a2e24;
+  --text-secondary: #6b9980;
+  --text-tertiary: #88aa98;
+  --text-muted: #a0c8b4;
+  --text-hint: #90bea8;
+  --border: #d4ece2;
+  --border-light: #e0f0ea;
+  --accent: #00b894;
+  --accent-light: #55efc4;
+  --accent-bg: #e8f8f5;
+  --accent-bg-hover: #d0f0e8;
+  --accent-border: #88dcc4;
+  --accent-surface: #f0faf7;
+  --accent-surface-border: #c0e8da;
+  --accent-dark: #009a7b;
+  --gradient-accent: linear-gradient(135deg, #00b894, #55efc4);
+  --shadow-card: 0 2px 12px rgba(0, 184, 148, .08);
+  --shadow-sm: 0 1px 6px rgba(0, 184, 148, .06);
+  --overlay-bg: rgba(0,0,0,.35);
+  --dialog-bg: #fff;
+  --badge-bg: #e0f0ea;
+  color-scheme: light;
+}
+
 *, *::before, *::after {
   box-sizing: border-box;
 }
@@ -13,8 +168,8 @@ html, body {
   height: 100%;
   margin: 0;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  background-color: #f7f8fc;
-  color: #1a1a2e;
+  background-color: var(--bg-page);
+  color: var(--text-primary);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }

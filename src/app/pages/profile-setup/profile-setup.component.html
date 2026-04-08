@@ -15,15 +15,15 @@
         <div class="avatar-edit-badge"><mat-icon>photo_camera</mat-icon></div>
         <input #avatarInput type="file" accept="image/*" hidden (change)="onAvatarSelected($event)">
       </div>
-      <h1>Set Up Your Profile</h1>
-      <p>Tell us about yourself so we can calculate your daily goals.</p>
+      <h1>{{ i18n.t('profile.title') }}</h1>
+      <p>{{ i18n.t('profile.subtitle') }}</p>
     </div>
 
     <!-- Image Crop Overlay -->
     @if (showCropper()) {
       <div class="crop-overlay" (click)="cancelCrop()">
         <div class="crop-dialog" (click)="$event.stopPropagation()">
-          <h3 class="crop-title">Crop Your Photo</h3>
+          <h3 class="crop-title">{{ i18n.t('profile.cropTitle') }}</h3>
           <div class="crop-container">
             <image-cropper
               [imageChangedEvent]="imageChangedEvent"
@@ -37,10 +37,10 @@
           </div>
           <div class="crop-actions">
             <button mat-flat-button class="crop-cancel-btn" (click)="cancelCrop()">
-              <mat-icon>close</mat-icon> Cancel
+              <mat-icon>close</mat-icon> {{ i18n.t('common.cancel') }}
             </button>
             <button mat-flat-button class="crop-confirm-btn" (click)="confirmCrop()" [disabled]="!croppedBlob">
-              <mat-icon>check</mat-icon> Confirm
+              <mat-icon>check</mat-icon> {{ i18n.t('common.confirm') }}
             </button>
           </div>
         </div>
@@ -60,11 +60,11 @@
     <!-- Step 1: Body info -->
     @if (step() === 1) {
       <div class="step-card animate-in">
-        <h2><mat-icon>monitor_weight</mat-icon> Body Information</h2>
+        <h2><mat-icon>monitor_weight</mat-icon> {{ i18n.t('profile.bodyInfo') }}</h2>
 
         <!-- Gender Selection -->
         <div class="gender-section">
-          <span class="gender-label">Gender</span>
+          <span class="gender-label">{{ i18n.t('profile.gender') }}</span>
           <div class="gender-cards">
             @for (opt of genderOptions; track opt.value) {
               <button class="gender-card" [class.selected]="gender === opt.value"
@@ -72,7 +72,7 @@
                 <div class="gender-icon-wrap" [class.male]="opt.value === 'male'" [class.female]="opt.value === 'female'">
                   <mat-icon>{{ opt.icon }}</mat-icon>
                 </div>
-                <span class="gender-text">{{ opt.label }}</span>
+                <span class="gender-text">{{ i18n.t(opt.labelKey) }}</span>
               </button>
             }
           </div>
@@ -80,19 +80,19 @@
 
         <div class="form-group">
           <mat-form-field appearance="outline" class="full-width">
-            <mat-label>Weight (kg)</mat-label>
+            <mat-label>{{ i18n.t('profile.weight') }}</mat-label>
             <input matInput type="number" [(ngModel)]="weight" min="20" max="300" placeholder="e.g. 65">
             <mat-icon matSuffix>fitness_center</mat-icon>
           </mat-form-field>
 
           <mat-form-field appearance="outline" class="full-width">
-            <mat-label>Height (cm)</mat-label>
+            <mat-label>{{ i18n.t('profile.height') }}</mat-label>
             <input matInput type="number" [(ngModel)]="height" min="100" max="250" placeholder="e.g. 170">
             <mat-icon matSuffix>height</mat-icon>
           </mat-form-field>
 
           <mat-form-field appearance="outline" class="full-width">
-            <mat-label>Age</mat-label>
+            <mat-label>{{ i18n.t('profile.age') }}</mat-label>
             <input matInput type="number" [(ngModel)]="age" min="10" max="120" placeholder="e.g. 25">
             <mat-icon matSuffix>cake</mat-icon>
           </mat-form-field>
@@ -103,14 +103,14 @@
     <!-- Step 2: Goal -->
     @if (step() === 2) {
       <div class="step-card animate-in">
-        <h2><mat-icon>flag</mat-icon> Your Goal</h2>
+        <h2><mat-icon>flag</mat-icon> {{ i18n.t('profile.yourGoal') }}</h2>
         <div class="option-cards">
           @for (opt of goalOptions; track opt.value) {
             <button class="option-card" [class.selected]="goalType === opt.value"
               (click)="goalType = opt.value">
               <mat-icon>{{ opt.icon }}</mat-icon>
-              <span class="option-label">{{ opt.label }}</span>
-              <span class="option-desc">{{ opt.desc }}</span>
+              <span class="option-label">{{ i18n.t(opt.labelKey) }}</span>
+              <span class="option-desc">{{ i18n.t(opt.descKey) }}</span>
             </button>
           }
         </div>
@@ -120,14 +120,14 @@
     <!-- Step 3: Activity -->
     @if (step() === 3) {
       <div class="step-card animate-in">
-        <h2><mat-icon>directions_run</mat-icon> Activity Level</h2>
+        <h2><mat-icon>directions_run</mat-icon> {{ i18n.t('profile.activityLevel') }}</h2>
         <div class="option-cards vertical">
           @for (opt of activityOptions; track opt.value) {
             <button class="option-card horizontal" [class.selected]="activityLevel === opt.value"
               (click)="activityLevel = opt.value">
               <div class="option-text">
-                <span class="option-label">{{ opt.label }}</span>
-                <span class="option-desc">{{ opt.desc }}</span>
+                <span class="option-label">{{ i18n.t(opt.labelKey) }}</span>
+                <span class="option-desc">{{ i18n.t(opt.descKey) }}</span>
               </div>
               @if (activityLevel === opt.value) {
                 <mat-icon class="check-icon">check_circle</mat-icon>
@@ -147,20 +147,20 @@
     <div class="nav-buttons">
       @if (step() > 1) {
         <button mat-flat-button class="back-btn" (click)="back()">
-          <mat-icon>arrow_back</mat-icon> Back
+          <mat-icon>arrow_back</mat-icon> {{ i18n.t('common.back') }}
         </button>
       }
       <div class="spacer"></div>
       @if (step() < 3) {
         <button mat-flat-button class="next-btn" (click)="next()" [disabled]="!canProceed()">
-          Next <mat-icon>arrow_forward</mat-icon>
+          {{ i18n.t('common.next') }} <mat-icon>arrow_forward</mat-icon>
         </button>
       } @else {
         <button mat-flat-button class="save-btn" (click)="save()" [disabled]="!canProceed() || saving()">
           @if (saving()) {
             <mat-spinner diameter="22"></mat-spinner>
           } @else {
-            <ng-container><mat-icon>check</mat-icon> Save & Continue</ng-container>
+            <ng-container><mat-icon>check</mat-icon> {{ i18n.t('profile.saveAndContinue') }}</ng-container>
           }
         </button>
       }

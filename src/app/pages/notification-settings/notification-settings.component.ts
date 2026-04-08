@@ -8,6 +8,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { SupabaseService } from '../../services/supabase.service';
 import { PushNotificationService } from '../../services/push-notification.service';
 import { ToastService } from '../../services/toast.service';
+import { I18nService } from '../../services/i18n.service';
 
 @Component({
   selector: 'app-notification-settings',
@@ -38,6 +39,7 @@ export class NotificationSettingsComponent implements OnInit {
   private push = inject(PushNotificationService);
   private toast = inject(ToastService);
   private router = inject(Router);
+  public i18n = inject(I18nService);
   private isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
 
   ngOnInit() {
@@ -73,7 +75,7 @@ export class NotificationSettingsComponent implements OnInit {
         this.isSubscribed.set(false);
         this.reminderEnabled.set(false);
         await this.supabase.upsertProfile({ reminder_enabled: false });
-        this.toast.success('ปิดแจ้งเตือนแล้ว');
+        this.toast.success(this.i18n.t('notif.disabledToast'));
       } else {
         const sub = await this.push.subscribe();
         if (sub) {
@@ -84,14 +86,14 @@ export class NotificationSettingsComponent implements OnInit {
             reminder_enabled: true,
             workout_reminder_time: this.reminderTime(),
           });
-          this.toast.success('เปิดแจ้งเตือนแล้ว! 🔔');
+          this.toast.success(this.i18n.t('notif.enabledToast'));
         } else {
-          this.toast.error('ไม่ได้รับอนุญาต หรือ subscribe ไม่สำเร็จ');
+          this.toast.error(this.i18n.t('notif.permissionDenied'));
         }
       }
     } catch (err) {
       console.error('Toggle notification error', err);
-      this.toast.error('เกิดข้อผิดพลาด');
+      this.toast.error(this.i18n.t('notif.error'));
     } finally {
       this.subscribing.set(false);
     }
@@ -105,7 +107,7 @@ export class NotificationSettingsComponent implements OnInit {
         this.isSubscribed.set(false);
         this.reminderEnabled.set(false);
         await this.supabase.upsertProfile({ reminder_enabled: false });
-        this.toast.success('Notifications disabled');
+        this.toast.success(this.i18n.t('notif.disabledToast'));
       } else {
         const sub = await this.push.subscribe();
         if (sub) {
@@ -116,14 +118,14 @@ export class NotificationSettingsComponent implements OnInit {
             reminder_enabled: true,
             workout_reminder_time: this.reminderTime(),
           });
-          this.toast.success('Notifications enabled! 🔔');
+          this.toast.success(this.i18n.t('notif.enabledToast'));
         } else {
-          this.toast.error('Permission denied or subscription failed');
+          this.toast.error(this.i18n.t('notif.permissionDenied'));
         }
       }
     } catch (err) {
       console.error('Toggle notification error', err);
-      this.toast.error('Failed to update notification settings');
+      this.toast.error(this.i18n.t('notif.error'));
     } finally {
       this.subscribing.set(false);
     }
@@ -136,10 +138,10 @@ export class NotificationSettingsComponent implements OnInit {
         reminder_enabled: this.reminderEnabled(),
         workout_reminder_time: this.reminderTime(),
       });
-      this.toast.success('Reminder time saved ✓');
+      this.toast.success(this.i18n.t('notif.timeSaved'));
     } catch (err) {
       console.error('Save reminder time error', err);
-      this.toast.error('Failed to save reminder time');
+      this.toast.error(this.i18n.t('notif.timeError'));
     } finally {
       this.saving.set(false);
     }

@@ -5,13 +5,19 @@
     <span class="brand-name">J-NubCal</span>
   </div>
   <div class="nav-right">
-    <button mat-icon-button routerLink="/notification-settings" matTooltip="Notifications">
+    <button mat-icon-button routerLink="/notification-settings" [matTooltip]="i18n.t('dash.notifications')">
       <mat-icon>notifications</mat-icon>
     </button>
-    <button mat-icon-button routerLink="/manage-foods" matTooltip="Manage Foods">
+    <button mat-icon-button routerLink="/manage-foods" [matTooltip]="i18n.t('dash.managefoods')">
       <mat-icon>restaurant_menu</mat-icon>
     </button>
-    <button mat-icon-button routerLink="/add-food" matTooltip="Add Food">
+    <button mat-icon-button routerLink="/manage-workouts" [matTooltip]="i18n.t('dash.manageWorkouts')">
+      <mat-icon>sports_score</mat-icon>
+    </button>
+    <button mat-icon-button routerLink="/manage-exercises" [matTooltip]="i18n.t('dash.manageExercises')">
+      <mat-icon>edit_note</mat-icon>
+    </button>
+    <button mat-icon-button routerLink="/add-food" [matTooltip]="i18n.t('dash.addFood')">
       <mat-icon>add_circle_outline</mat-icon>
     </button>
     <button mat-icon-button [matMenuTriggerFor]="menu" class="avatar-btn">
@@ -23,11 +29,36 @@
     </button>
     <mat-menu #menu="matMenu">
       <button mat-menu-item routerLink="/profile-setup">
-        <mat-icon>settings</mat-icon> Edit Profile
+        <mat-icon>settings</mat-icon> {{ i18n.t('dash.editProfile') }}
+      </button>
+      <button mat-menu-item [matMenuTriggerFor]="langMenu">
+        <mat-icon>translate</mat-icon> {{ i18n.t('dash.language') }}
+      </button>
+      <button mat-menu-item [matMenuTriggerFor]="themeMenu">
+        <mat-icon>palette</mat-icon> {{ i18n.t('dash.theme') }}
       </button>
       <button mat-menu-item (click)="logout()">
-        <mat-icon>logout</mat-icon> Logout
+        <mat-icon>logout</mat-icon> {{ i18n.t('dash.logout') }}
       </button>
+    </mat-menu>
+    <mat-menu #langMenu="matMenu">
+      <button mat-menu-item (click)="switchLanguage('en')">
+        <span>🇺🇸</span>&nbsp; English
+      </button>
+      <button mat-menu-item (click)="switchLanguage('th')">
+        <span>🇹🇭</span>&nbsp; ภาษาไทย
+      </button>
+    </mat-menu>
+    <mat-menu #themeMenu="matMenu">
+      @for (t of themeService.themes; track t.id) {
+        <button mat-menu-item (click)="switchTheme(t.id)" class="theme-menu-item">
+          <span class="theme-swatch" [style.background]="'linear-gradient(135deg, ' + t.swatch + ', ' + t.swatchLight + ')'"></span>
+          <span>{{ i18n.t('theme.' + t.id) }}</span>
+          @if (themeService.theme() === t.id) {
+            <mat-icon class="theme-check">check</mat-icon>
+          }
+        </button>
+      }
     </mat-menu>
   </div>
 </nav>
@@ -40,7 +71,7 @@
     <!-- ===== Greeting & Date ===== -->
     <section class="greeting-section">
       <div class="greeting-text">
-        <h1>Today's Summary</h1>
+        <h1>{{ i18n.t('dash.todaySummary') }}</h1>
         <p class="greeting-date">{{ today | date:'EEEE, MMMM d' }}</p>
       </div>
       <div class="greeting-badge" [style.background]="bmiColor() + '18'" [style.color]="bmiColor()">
@@ -69,7 +100,7 @@
           <mat-icon class="stat-icon eaten">local_dining</mat-icon>
           <div class="stat-info">
             <span class="stat-num">{{ totalCalories() }}</span>
-            <span class="stat-label">Eaten</span>
+            <span class="stat-label">{{ i18n.t('dash.eaten') }}</span>
           </div>
         </div>
         <div class="hero-divider"></div>
@@ -77,7 +108,7 @@
           <mat-icon class="stat-icon burned">local_fire_department</mat-icon>
           <div class="stat-info">
             <span class="stat-num burned-num">{{ totalBurned() }}</span>
-            <span class="stat-label">Burned</span>
+            <span class="stat-label">{{ i18n.t('dash.burned') }}</span>
           </div>
         </div>
         <div class="hero-divider"></div>
@@ -85,7 +116,7 @@
           <mat-icon class="stat-icon remaining">battery_charging_full</mat-icon>
           <div class="stat-info">
             <span class="stat-num remaining-num">{{ remainingCalories() }}</span>
-            <span class="stat-label">Remaining</span>
+            <span class="stat-label">{{ i18n.t('dash.remaining') }}</span>
           </div>
         </div>
       </div>
@@ -94,16 +125,16 @@
     <!-- ===== Quick Actions ===== -->
     <section class="actions-row">
       <button mat-flat-button class="action-btn primary-btn" routerLink="/add-meal">
-        <mat-icon>add</mat-icon> Log Meal
+        <mat-icon>add</mat-icon> {{ i18n.t('dash.logMeal') }}
       </button>
       <button mat-flat-button class="action-btn outline-btn" routerLink="/add-workout">
-        <mat-icon>fitness_center</mat-icon> Workout
+        <mat-icon>fitness_center</mat-icon> {{ i18n.t('dash.workout') }}
       </button>
     </section>
 
     <!-- ===== Macros with Progress Bars ===== -->
     <section class="macros-section">
-      <h3 class="section-title">Macros</h3>
+      <h3 class="section-title">{{ i18n.t('dash.macros') }}</h3>
       <div class="macro-cards">
         <div class="macro-card protein">
           <div class="macro-header">
@@ -114,7 +145,7 @@
             </div>
           </div>
           <div class="macro-bar-track"><div class="macro-bar-fill protein-fill" [style.width.%]="proteinPercent()"></div></div>
-          <span class="macro-label">Protein</span>
+          <span class="macro-label">{{ i18n.t('dash.protein') }}</span>
         </div>
 
         <div class="macro-card carbs">
@@ -126,7 +157,7 @@
             </div>
           </div>
           <div class="macro-bar-track"><div class="macro-bar-fill carbs-fill" [style.width.%]="carbsPercent()"></div></div>
-          <span class="macro-label">Carbs</span>
+          <span class="macro-label">{{ i18n.t('dash.carbs') }}</span>
         </div>
 
         <div class="macro-card fat">
@@ -138,50 +169,131 @@
             </div>
           </div>
           <div class="macro-bar-track"><div class="macro-bar-fill fat-fill" [style.width.%]="fatPercent()"></div></div>
-          <span class="macro-label">Fat</span>
+          <span class="macro-label">{{ i18n.t('dash.fat') }}</span>
         </div>
       </div>
     </section>
 
-    <!-- ===== Profile Stats Cards ===== -->
+    <!-- ===== Profile Stats ===== -->
     <section class="profile-stats">
-      <h3 class="section-title">Your Profile</h3>
-      <div class="stat-grid">
-        <div class="stat-card">
-          <mat-icon class="sc-icon" [style.color]="profile()?.gender === 'female' ? '#e84393' : '#0984e3'">{{ profile()?.gender === 'female' ? 'female' : 'male' }}</mat-icon>
-          <span class="sc-value small-text">{{ genderLabel() }}</span>
-          <span class="sc-label">Gender</span>
+      <div class="ps-header">
+        <h3 class="section-title">{{ i18n.t('dash.yourProfile') }}</h3>
+        <button mat-icon-button routerLink="/profile-setup" class="ps-edit-btn">
+          <mat-icon>edit</mat-icon>
+        </button>
+      </div>
+      <div class="ps-card">
+        <!-- Top row: key metrics -->
+        <div class="ps-metrics">
+          <div class="ps-metric">
+            <span class="ps-val">{{ profile()?.weight ?? '—' }}<small>kg</small></span>
+            <span class="ps-lbl">{{ i18n.t('dash.weightLabel') }}</span>
+          </div>
+          <div class="ps-divider"></div>
+          <div class="ps-metric">
+            <span class="ps-val">{{ profile()?.height ?? '—' }}<small>cm</small></span>
+            <span class="ps-lbl">{{ i18n.t('dash.heightLabel') }}</span>
+          </div>
+          <div class="ps-divider"></div>
+          <div class="ps-metric">
+            <span class="ps-val">{{ profile()?.age ?? '—' }}</span>
+            <span class="ps-lbl">{{ i18n.t('dash.ageLabel') }}</span>
+          </div>
+          <div class="ps-divider"></div>
+          <div class="ps-metric">
+            <span class="ps-val" [style.color]="bmiColor()">{{ bmiValue() }}</span>
+            <span class="ps-lbl">BMI · {{ bmiCategory() }}</span>
+          </div>
         </div>
-        <div class="stat-card">
-          <mat-icon class="sc-icon">monitor_weight</mat-icon>
-          <span class="sc-value">{{ profile()?.weight ?? '—' }}<small>kg</small></span>
-          <span class="sc-label">Weight</span>
+        <!-- Bottom row: tags -->
+        <div class="ps-tags">
+          <span class="ps-tag" [class.ps-tag-pink]="profile()?.gender === 'female'">
+            <mat-icon>{{ profile()?.gender === 'female' ? 'female' : 'male' }}</mat-icon>
+            {{ genderLabel() }}
+          </span>
+          <span class="ps-tag">
+            <mat-icon>{{ goalIcon() }}</mat-icon>
+            {{ goalLabel() }}
+          </span>
+          <span class="ps-tag">
+            <mat-icon>directions_run</mat-icon>
+            {{ activityLabel() }}
+          </span>
         </div>
-        <div class="stat-card">
-          <mat-icon class="sc-icon">height</mat-icon>
-          <span class="sc-value">{{ profile()?.height ?? '—' }}<small>cm</small></span>
-          <span class="sc-label">Height</span>
+      </div>
+    </section>
+
+    <!-- ===== Weight Tracker ===== -->
+    <section class="weight-section">
+      <div class="weight-header">
+        <h3 class="section-title">{{ i18n.t('dash.weightTracker') }}</h3>
+        <span class="weight-range-label">{{ i18n.t('dash.last30Days') }}</span>
+      </div>
+      <div class="weight-card">
+        <!-- Today's weight input -->
+        <div class="weight-input-row">
+          <div class="weight-input-label">
+            <mat-icon>monitor_weight</mat-icon>
+            <span>{{ i18n.t('dash.todayWeight') }}</span>
+          </div>
+          <div class="weight-input-group">
+            <input type="number"
+              class="weight-input"
+              [placeholder]="i18n.t('dash.weightPlaceholder')"
+              [value]="todayWeight()"
+              step="0.1"
+              min="20"
+              max="400"
+              (keydown.enter)="saveWeight($event)"
+              #weightInput>
+            <span class="weight-unit">kg</span>
+            <button mat-flat-button
+              class="weight-save-btn"
+              (click)="saveWeight(weightInput)"
+              [disabled]="savingWeight()">
+              @if (savingWeight()) {
+                <mat-spinner diameter="18"></mat-spinner>
+              } @else {
+                <mat-icon>{{ todayWeight() ? 'check' : 'add' }}</mat-icon>
+              }
+            </button>
+          </div>
         </div>
-        <div class="stat-card">
-          <mat-icon class="sc-icon">cake</mat-icon>
-          <span class="sc-value">{{ profile()?.age ?? '—' }}</span>
-          <span class="sc-label">Age</span>
-        </div>
-        <div class="stat-card">
-          <mat-icon class="sc-icon" [style.color]="bmiColor()">speed</mat-icon>
-          <span class="sc-value" [style.color]="bmiColor()">{{ bmiValue() }}</span>
-          <span class="sc-label">BMI · {{ bmiCategory() }}</span>
-        </div>
-        <div class="stat-card">
-          <mat-icon class="sc-icon">{{ goalIcon() }}</mat-icon>
-          <span class="sc-value small-text">{{ goalLabel() }}</span>
-          <span class="sc-label">Goal</span>
-        </div>
-        <div class="stat-card">
-          <mat-icon class="sc-icon">directions_run</mat-icon>
-          <span class="sc-value small-text">{{ activityLabel() }}</span>
-          <span class="sc-label">Activity</span>
-        </div>
+        <!-- Weight trend mini-stats -->
+        @if (weightLogs().length >= 2) {
+          <div class="weight-trend">
+            <div class="trend-stat">
+              <span class="trend-val">{{ weightLogs()[0].weight }}<small>kg</small></span>
+              <span class="trend-lbl">{{ i18n.t('dash.startWeight') }}</span>
+            </div>
+            <mat-icon class="trend-arrow" [class.trend-down]="weightChange() < 0" [class.trend-up]="weightChange() > 0">
+              {{ weightChange() < 0 ? 'trending_down' : weightChange() > 0 ? 'trending_up' : 'trending_flat' }}
+            </mat-icon>
+            <div class="trend-stat">
+              <span class="trend-val">{{ weightLogs()[weightLogs().length - 1].weight }}<small>kg</small></span>
+              <span class="trend-lbl">{{ i18n.t('dash.latestWeight') }}</span>
+            </div>
+            <div class="trend-badge" [class.badge-loss]="weightChange() < 0" [class.badge-gain]="weightChange() > 0">
+              {{ weightChange() > 0 ? '+' : '' }}{{ weightChange() }}<small>kg</small>
+            </div>
+          </div>
+        }
+        <!-- Weight chart -->
+        @if (weightChartData().labels!.length > 1) {
+          <div class="weight-chart-wrap">
+            <canvas baseChart
+              [datasets]="weightChartData().datasets"
+              [labels]="weightChartData().labels"
+              [options]="weightChartOptions"
+              type="line">
+            </canvas>
+          </div>
+        } @else {
+          <div class="weight-empty">
+            <mat-icon>show_chart</mat-icon>
+            <span>{{ i18n.t('dash.weightLogMore') }}</span>
+          </div>
+        }
       </div>
     </section>
 
@@ -189,11 +301,11 @@
     <section class="charts-section">
       <div class="chart-box">
         <div class="chart-header">
-          <h3>Macro Split</h3>
+          <h3>{{ i18n.t('dash.macroSplit') }}</h3>
           <div class="chart-legend">
-            <span class="legend-dot protein-dot"></span> Protein
-            <span class="legend-dot carbs-dot"></span> Carbs
-            <span class="legend-dot fat-dot"></span> Fat
+            <span class="legend-dot protein-dot"></span> {{ i18n.t('dash.protein') }}
+            <span class="legend-dot carbs-dot"></span> {{ i18n.t('dash.carbs') }}
+            <span class="legend-dot fat-dot"></span> {{ i18n.t('dash.fat') }}
           </div>
         </div>
         <div class="chart-canvas-wrap doughnut-wrap">
@@ -207,8 +319,8 @@
       </div>
       <div class="chart-box">
         <div class="chart-header">
-          <h3>This Week</h3>
-          <span class="chart-subtitle">Daily Calories</span>
+          <h3>{{ i18n.t('dash.thisWeek') }}</h3>
+          <span class="chart-subtitle">{{ i18n.t('dash.dailyCalories') }}</span>
         </div>
         <div class="chart-canvas-wrap bar-wrap">
           <canvas baseChart
@@ -224,15 +336,15 @@
     <!-- ===== Today's Meals ===== -->
     <section class="meals-section">
       <div class="meals-header">
-        <h3>Today's Meals</h3>
-        <span class="meals-count">{{ todayMeals().length }} meal{{ todayMeals().length !== 1 ? 's' : '' }}</span>
+        <h3>{{ i18n.t('dash.todayMeals') }}</h3>
+        <span class="meals-count">{{ todayMeals().length }} {{ todayMeals().length !== 1 ? i18n.t('dash.meals') : i18n.t('dash.meal') }}</span>
       </div>
       @if (todayMeals().length === 0) {
         <div class="empty-state">
           <div class="empty-icon-ring"><mat-icon>restaurant_menu</mat-icon></div>
-          <p>No meals logged yet today</p>
+          <p>{{ i18n.t('dash.noMealsYet') }}</p>
           <button mat-flat-button class="action-btn primary-btn small-btn" routerLink="/add-meal">
-            <mat-icon>add</mat-icon> Log Your First Meal
+            <mat-icon>add</mat-icon> {{ i18n.t('dash.logFirstMeal') }}
           </button>
         </div>
       } @else {
@@ -264,15 +376,15 @@
           <div class="delete-overlay" (click)="cancelDelete()">
             <div class="delete-dialog" (click)="$event.stopPropagation()">
               <div class="delete-dialog-icon"><mat-icon>delete_forever</mat-icon></div>
-              <h4>Delete this meal?</h4>
-              <p>{{ mealToDelete()!.meal_type | titlecase }} — {{ getMealCalories(mealToDelete()!) }} kcal will be removed.</p>
+              <h4>{{ i18n.t('dash.deleteMeal') }}</h4>
+              <p>{{ mealToDelete()!.meal_type | titlecase }} — {{ getMealCalories(mealToDelete()!) }} {{ i18n.t('dash.deleteMealDesc') }}</p>
               <div class="delete-dialog-actions">
-                <button mat-flat-button class="cancel-btn" (click)="cancelDelete()">Cancel</button>
+                <button mat-flat-button class="cancel-btn" (click)="cancelDelete()">{{ i18n.t('common.cancel') }}</button>
                 <button mat-flat-button class="confirm-delete-btn" (click)="deleteMeal()" [disabled]="deletingMealId()">
                   @if (deletingMealId()) {
                     <mat-spinner diameter="20"></mat-spinner>
                   } @else {
-                    <ng-container>Delete</ng-container>
+                    <ng-container>{{ i18n.t('common.delete') }}</ng-container>
                   }
                 </button>
               </div>

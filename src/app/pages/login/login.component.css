@@ -3,7 +3,7 @@
   display: flex;
   min-height: 100vh;
   min-height: 100dvh;
-  background: #f7f8fc;
+  background: var(--bg-page);
 }
 
 /* ── Hero panel (left / top on mobile) ── */
@@ -12,7 +12,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(145deg, #6c5ce7, #a29bfe);
+  background: var(--gradient-accent);
   color: #fff;
   padding: 48px 32px;
   position: relative;
@@ -128,7 +128,7 @@
   margin-bottom: 24px;
   font-size: 22px;
   font-weight: 800;
-  color: #6c5ce7;
+  color: var(--accent);
 }
 
 .mobile-logo mat-icon {
@@ -140,12 +140,12 @@
 .form-wrapper h2 {
   font-size: 26px;
   font-weight: 700;
-  color: #1a1a2e;
+  color: var(--text-primary);
   margin: 0 0 4px;
 }
 
 .form-subtitle {
-  color: #888;
+  color: var(--text-secondary);
   font-size: 14px;
   margin: 0 0 24px;
 }
@@ -164,14 +164,14 @@
   border-radius: 10px;
   font-weight: 600;
   font-size: 14px;
-  color: #888;
+  color: var(--text-secondary);
   transition: all .2s;
 }
 
 .toggle-row button.active {
-  background: #6c5ce7;
+  background: var(--accent);
   color: #fff;
-  box-shadow: 0 2px 8px rgba(108,92,231,.3);
+  box-shadow: 0 2px 8px rgba(from var(--accent) r g b / .3);
 }
 
 /* ── Form ── */
@@ -188,14 +188,14 @@
   font-size: 16px;
   font-weight: 600;
   border-radius: 12px;
-  background: #6c5ce7;
+  background: var(--accent);
   color: #fff;
   margin-top: 4px;
   letter-spacing: .3px;
 }
 
 .submit-btn:hover:not(:disabled) {
-  background: #5a4bd1;
+  background: var(--accent-dark);
 }
 
 /* ── Error ── */
@@ -221,13 +221,13 @@
 /* ── Footer link ── */
 .footer-text {
   text-align: center;
-  color: #888;
+  color: var(--text-secondary);
   font-size: 13px;
   margin-top: 24px;
 }
 
 .link {
-  color: #6c5ce7;
+  color: var(--accent);
   font-weight: 600;
   cursor: pointer;
 }
@@ -249,7 +249,7 @@
   position: fixed;
   inset: 0;
   z-index: 9999;
-  background: linear-gradient(145deg, #6c5ce7, #a29bfe);
+  background: var(--gradient-accent);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -345,7 +345,7 @@
 
 /* ── Submit button loading state ── */
 .submit-btn.is-loading {
-  background: #5a4bd1;
+  background: var(--accent-dark);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -364,15 +364,15 @@
   display: flex;
   align-items: flex-start;
   gap: 12px;
-  background: #f0edff;
-  border: 1px solid #d5cffc;
+  background: var(--accent-bg);
+  border: 1px solid var(--accent-border);
   border-radius: 14px;
   padding: 18px 16px;
   margin-bottom: 8px;
 }
 
 .confirmation-banner mat-icon {
-  color: #6c5ce7;
+  color: var(--accent);
   font-size: 28px;
   width: 28px;
   height: 28px;
@@ -380,7 +380,7 @@
   margin-top: 2px;
 }
 
-.confirmation-banner strong { color: #1a1a2e; }
+.confirmation-banner strong { color: var(--text-primary); }
 
 .confirmation-banner p {
   margin: 4px 0 0;

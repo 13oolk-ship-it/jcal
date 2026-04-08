@@ -11,6 +11,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { ImageCropperComponent, ImageCroppedEvent } from 'ngx-image-cropper';
 import { SupabaseService } from '../../services/supabase.service';
 import { ToastService } from '../../services/toast.service';
+import { I18nService } from '../../services/i18n.service';
 
 @Component({
   selector: 'app-profile-setup',
@@ -48,27 +49,28 @@ export class ProfileSetupComponent implements OnInit {
   activityLevel = '';
 
   genderOptions = [
-    { value: 'male', label: 'Male', icon: 'male' },
-    { value: 'female', label: 'Female', icon: 'female' },
+    { value: 'male', labelKey: 'profile.male', icon: 'male' },
+    { value: 'female', labelKey: 'profile.female', icon: 'female' },
   ];
 
   goalOptions = [
-    { value: 'lose', label: 'Lose Weight', icon: 'trending_down', desc: 'Calorie deficit' },
-    { value: 'maintain', label: 'Maintain', icon: 'balance', desc: 'Keep current weight' },
-    { value: 'gain', label: 'Gain Weight', icon: 'trending_up', desc: 'Calorie surplus' },
+    { value: 'lose', labelKey: 'profile.loseWeight', icon: 'trending_down', descKey: 'profile.calorieDeficit' },
+    { value: 'maintain', labelKey: 'profile.maintain', icon: 'balance', descKey: 'profile.keepCurrent' },
+    { value: 'gain', labelKey: 'profile.gainWeight', icon: 'trending_up', descKey: 'profile.calorieSurplus' },
   ];
 
   activityOptions = [
-    { value: 'sedentary', label: 'Sedentary', desc: 'Little or no exercise' },
-    { value: 'light', label: 'Lightly Active', desc: 'Exercise 1-3 days/week' },
-    { value: 'moderate', label: 'Moderately Active', desc: 'Exercise 3-5 days/week' },
-    { value: 'active', label: 'Very Active', desc: 'Exercise 6-7 days/week' },
+    { value: 'sedentary', labelKey: 'profile.sedentary', descKey: 'profile.sedentaryDesc' },
+    { value: 'light', labelKey: 'profile.lightlyActive', descKey: 'profile.lightDesc' },
+    { value: 'moderate', labelKey: 'profile.moderatelyActive', descKey: 'profile.moderateDesc' },
+    { value: 'active', labelKey: 'profile.veryActive', descKey: 'profile.activeDesc' },
   ];
 
   constructor(
     private supabase: SupabaseService,
     private router: Router,
     private toast: ToastService,
+    public i18n: I18nService,
   ) {}
 
   async ngOnInit() {
@@ -123,7 +125,7 @@ export class ProfileSetupComponent implements OnInit {
         goal_type: this.goalType,
         activity_level: this.activityLevel,
       });
-      this.toast.success('Profile saved! 🎉');
+      this.toast.success(this.i18n.t('profile.profileSaved'));
       this.router.navigate(['/dashboard']);
     } catch (err: unknown) {
       this.errorMessage.set(err instanceof Error ? err.message : 'Failed to save profile');

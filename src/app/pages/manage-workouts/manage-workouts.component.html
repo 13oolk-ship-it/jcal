@@ -1,0 +1,197 @@
+<nav class="top-nav">
+  <button mat-icon-button routerLink="/dashboard">
+    <mat-icon>arrow_back</mat-icon>
+  </button>
+  <span class="nav-title">{{ i18n.t('mw.title') }}</span>
+  <button mat-icon-button routerLink="/add-workout" [matTooltip]="i18n.t('mw.addNew')">
+    <mat-icon>add_circle_outline</mat-icon>
+  </button>
+</nav>
+
+<div class="page">
+  <!-- Search bar -->
+  <div class="search-bar">
+    <mat-icon class="search-icon">search</mat-icon>
+    <input type="text" [placeholder]="i18n.t('mw.searchWorkouts')" [(ngModel)]="searchQuery"
+      (input)="applyFilter()" class="search-input" />
+    @if (searchQuery) {
+      <button class="clear-btn" (click)="searchQuery = ''; applyFilter()">
+        <mat-icon>close</mat-icon>
+      </button>
+    }
+  </div>
+
+  @if (loading()) {
+    <div class="loading-center"><mat-spinner diameter="40"></mat-spinner></div>
+  } @else if (workouts().length === 0) {
+    <div class="empty-state">
+      <div class="empty-icon"><mat-icon>fitness_center</mat-icon></div>
+      <h3>{{ i18n.t('mw.noWorkoutsYet') }}</h3>
+      <p>{{ i18n.t('mw.addFirstWorkout') }}</p>
+      <button mat-flat-button routerLink="/add-workout" class="primary-btn">
+        <mat-icon>add</mat-icon> {{ i18n.t('workout.title') }}
+      </button>
+    </div>
+  } @else {
+    <div class="item-count">
+      <span>{{ filteredWorkouts().length }} {{ i18n.t('mw.records') }}</span>
+    </div>
+
+    <div class="workout-list">
+      @for (w of filteredWorkouts(); track w.id) {
+        <div class="workout-item" [class.editing]="editingWorkout()?.id === w.id">
+          <!-- View mode -->
+          @if (editingWorkout()?.id !== w.id) {
+            <div class="workout-item-main">
+              <div class="cat-icon-wrap" [class]="'cat-' + w.category">
+                <mat-icon>{{ getCategoryIcon(w.category) }}</mat-icon>
+              </div>
+              <div class="workout-info">
+                <span class="workout-name">{{ w.exercise_name }}</span>
+                <div class="workout-tags">
+                  <span class="tag cat-tag">{{ i18n.t(getCategoryKey(w.category)) }}</span>
+                  <span class="tag cal-tag">-{{ w.calories_burned }} kcal</span>
+                  @if (w.duration_min) {
+                    <span class="tag dur-tag">{{ w.duration_min }} {{ i18n.t('workout.min') }}</span>
+                  }
+                  @if (w.sets) {
+                    <span class="tag set-tag">{{ w.sets }}×{{ w.reps }}</span>
+                  }
+                  @if (w.weight_kg) {
+                    <span class="tag wt-tag">{{ w.weight_kg }}{{ i18n.t('workout.kg') }}</span>
+                  }
+                  @if (w.intensity) {
+                    <span class="tag int-tag">{{ w.intensity }}</span>
+                  }
+                </div>
+                <div class="workout-date">
+                  {{ formatDate(w.created_at) }} · {{ formatTime(w.created_at) }}
+                  @if (w.notes) {
+                    <span class="workout-note"> · {{ w.notes }}</span>
+                  }
+                </div>
+              </div>
+              <div class="workout-actions">
+                <button mat-icon-button (click)="startEdit(w)" class="edit-btn" [matTooltip]="i18n.t('common.edit')">
+                  <mat-icon>edit</mat-icon>
+                </button>
+                <button mat-icon-button (click)="confirmDelete(w)" class="del-btn" [matTooltip]="i18n.t('common.delete')">
+                  <mat-icon>delete_outline</mat-icon>
+                </button>
+              </div>
+            </div>
+          } @else {
+            <!-- Edit mode -->
+            <div class="edit-form">
+              <div class="edit-row">
+                <label>{{ i18n.t('mw.exerciseName') }}</label>
+                <input type="text" [(ngModel)]="editForm.exercise_name" class="edit-input full" />
+              </div>
+              <!-- Cardio fields -->
+              @if (w.category === 'cardio') {
+                <div class="edit-grid cols-3">
+                  <div class="edit-field">
+                    <label>{{ i18n.t('workout.duration') }} ({{ i18n.t('workout.min') }})</label>
+                    <input type="number" [(ngModel)]="editForm.duration_min" class="edit-input" min="0" />
+                  </div>
+                  <div class="edit-field">
+                    <label>{{ i18n.t('workout.intensity') }}</label>
+                    <select [(ngModel)]="editForm.intensity" class="edit-input">
+                      <option value="low">{{ i18n.t('workout.light') }}</option>
+                      <option value="moderate">{{ i18n.t('workout.moderate') }}</option>
+                      <option value="high">{{ i18n.t('workout.hard') }}</option>
+                      <option value="intense">{{ i18n.t('workout.intense') }}</option>
+                    </select>
+                  </div>
+                  <div class="edit-field">
+                    <label>{{ i18n.t('mw.caloriesBurned') }}</label>
+                    <input type="number" [(ngModel)]="editForm.calories_burned" class="edit-input" min="0" />
+                  </div>
+                </div>
+              }
+              <!-- Strength fields -->
+              @if (w.category === 'strength') {
+                <div class="edit-grid cols-4">
+                  <div class="edit-field">
+                    <label>{{ i18n.t('workout.sets') }}</label>
+                    <input type="number" [(ngModel)]="editForm.sets" class="edit-input" min="0" />
+                  </div>
+                  <div class="edit-field">
+                    <label>{{ i18n.t('workout.reps') }}</label>
+                    <input type="number" [(ngModel)]="editForm.reps" class="edit-input" min="0" />
+                  </div>
+                  <div class="edit-field">
+                    <label>{{ i18n.t('workout.weightKg') }}</label>
+                    <input type="number" [(ngModel)]="editForm.weight_kg" class="edit-input" min="0" step="0.5" />
+                  </div>
+                  <div class="edit-field">
+                    <label>{{ i18n.t('mw.caloriesBurned') }}</label>
+                    <input type="number" [(ngModel)]="editForm.calories_burned" class="edit-input" min="0" />
+                  </div>
+                </div>
+              }
+              <!-- Flexibility fields -->
+              @if (w.category === 'flexibility') {
+                <div class="edit-grid cols-2">
+                  <div class="edit-field">
+                    <label>{{ i18n.t('workout.duration') }} ({{ i18n.t('workout.min') }})</label>
+                    <input type="number" [(ngModel)]="editForm.duration_min" class="edit-input" min="0" />
+                  </div>
+                  <div class="edit-field">
+                    <label>{{ i18n.t('mw.caloriesBurned') }}</label>
+                    <input type="number" [(ngModel)]="editForm.calories_burned" class="edit-input" min="0" />
+                  </div>
+                </div>
+              }
+              <!-- Notes (all categories) -->
+              <div class="edit-row">
+                <label>{{ i18n.t('workout.notesOptional') }}</label>
+                <input type="text" [(ngModel)]="editForm.notes" class="edit-input full" [placeholder]="i18n.t('workout.notesPlaceholder')" />
+              </div>
+              <div class="edit-actions">
+                <button mat-flat-button class="cancel-edit-btn" (click)="cancelEdit()">{{ i18n.t('common.cancel') }}</button>
+                <button mat-flat-button class="save-edit-btn" (click)="saveEdit()" [disabled]="saving()">
+                  @if (saving()) {
+                    <mat-spinner diameter="18"></mat-spinner>
+                  } @else {
+                    <ng-container><mat-icon>check</mat-icon> {{ i18n.t('common.save') }}</ng-container>
+                  }
+                </button>
+              </div>
+            </div>
+          }
+        </div>
+      }
+    </div>
+
+    @if (filteredWorkouts().length === 0 && searchQuery) {
+      <div class="no-results">
+        <mat-icon>search_off</mat-icon>
+        <p>{{ i18n.t('mw.noResults') }} "{{ searchQuery }}"</p>
+      </div>
+    }
+  }
+</div>
+
+<!-- Delete confirm overlay -->
+@if (workoutToDelete()) {
+  <div class="delete-overlay" (click)="cancelDelete()">
+    <div class="delete-dialog" (click)="$event.stopPropagation()">
+      <div class="delete-dialog-icon">
+        <mat-icon>delete_forever</mat-icon>
+      </div>
+      <h4>{{ i18n.t('mw.deleteTitle') }} "{{ workoutToDelete()!.exercise_name }}"?</h4>
+      <p>{{ i18n.t('mw.deleteConfirm') }}</p>
+      <div class="delete-dialog-actions">
+        <button mat-flat-button class="dialog-cancel" (click)="cancelDelete()">{{ i18n.t('common.cancel') }}</button>
+        <button mat-flat-button class="dialog-confirm" (click)="deleteWorkout()" [disabled]="deleting()">
+          @if (deleting()) {
+            <mat-spinner diameter="20"></mat-spinner>
+          } @else {
+            <ng-container>{{ i18n.t('common.delete') }}</ng-container>
+          }
+        </button>
+      </div>
+    </div>
+  </div>
+}

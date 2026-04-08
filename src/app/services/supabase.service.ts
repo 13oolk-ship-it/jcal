@@ -40,6 +40,8 @@ export interface Profile {
   reminder_enabled?: boolean;
   workout_reminder_time?: string;
   push_subscription?: string;
+  language?: 'en' | 'th';
+  theme?: 'violet' | 'dark' | 'ocean' | 'rose' | 'forest';
   created_at?: string;
 }
 
@@ -56,6 +58,25 @@ export interface Workout {
   weight_kg?: number;
   notes?: string;
   date?: string;
+  created_at?: string;
+}
+
+export interface Exercise {
+  id?: number;
+  user_id?: string;
+  name: string;
+  icon: string;
+  cal_per_min: number;
+  category: 'cardio' | 'strength' | 'flexibility';
+  muscle?: string;
+  created_at?: string;
+}
+
+export interface WeightLog {
+  id?: number;
+  user_id?: string;
+  weight: number;
+  date: string;
   created_at?: string;
 }
 
@@ -317,6 +338,30 @@ export class SupabaseService {
     return data ?? [];
   }
 
+  async getAllWorkouts(): Promise<Workout[]> {
+    const user = await this.getUser();
+    if (!user) return [];
+    const { data, error } = await this.supabase
+      .from('workouts')
+      .select('*')
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false });
+    if (error) throw error;
+    return data ?? [];
+  }
+
+  async updateWorkout(id: number, updates: Partial<Omit<Workout, 'id' | 'user_id' | 'created_at'>>): Promise<Workout> {
+    this.assertBrowser();
+    const { data, error } = await this.supabase
+      .from('workouts')
+      .update(updates)
+      .eq('id', id)
+      .select()
+      .single();
+    if (error) throw error;
+    return data;
+  }
+
   async deleteWorkout(id: number): Promise<void> {
     this.assertBrowser();
     const { error } = await this.supabase
@@ -324,6 +369,119 @@ export class SupabaseService {
       .delete()
       .eq('id', id);
     if (error) throw error;
+  }
+
+  // ─── Exercises (user custom presets) ─────────────
+  async getExercises(): Promise<Exercise[]> {
+    const user = await this.getUser();
+    if (!user) return [];
+    const { data, error } = await this.supabase
+      .from('exercises')
+      .select('*')
+      .eq('user_id', user.id)
+      .order('category')
+      .order('name');
+    if (error) throw error;
+    return data ?? [];
+  }
+
+  async addExercise(exercise: Omit<Exercise, 'id' | 'user_id' | 'created_at'>): Promise<Exercise> {
+    this.assertBrowser();
+    const user = await this.getUser();
+    if (!user) throw new Error('Not authenticated');
+    const { data, error } = await this.supabase
+      .from('exercises')
+      .insert({ ...exercise, user_id: user.id })
+      .select()
+      .single();
+    if (error) throw error;
+    return data;
+  }
+
+  async updateExercise(id: number, updates: Partial<Omit<Exercise, 'id' | 'user_id' | 'created_at'>>): Promise<Exercise> {
+    this.assertBrowser();
+    const { data, error } = await this.supabase
+      .from('exercises')
+      .update(updates)
+      .eq('id', id)
+      .select()
+      .single();
+    if (error) throw error;
+    return data;
+  }
+
+  async deleteExercise(id: number): Promise<void> {
+    this.assertBrowser();
+    const { error } = await this.supabase
+      .from('exercises')
+      .delete()
+      .eq('id', id);
+    if (error) throw error;
+  }
+
+  // ─── Weight Logs ────────────────────────────────
+  async upsertWeightLog(weight: number, date: string): Promise<WeightLog> {
+    this.assertBrowser();
+    const user = await this.getUser();
+    if (!user) throw new Error('Not authenticated');
+
+    // Check if entry for this date already exists
+    const { data: existing } = await this.supabase
+      .from('weight_logs')
+      .select('id')
+      .eq('user_id', user.id)
+      .eq('date', date)
+      .maybeSingle();
+
+    if (existing) {
+      const { data, error } = await this.supabase
+        .from('weight_logs')
+        .update({ weight })
+        .eq('id', existing.id)
+        .select()
+        .single();
+      if (error) throw error;
+      return data;
+    } else {
+      const { data, error } = await this.supabase
+        .from('weight_logs')
+        .insert({ user_id: user.id, weight, date })
+        .select()
+        .single();
+      if (error) throw error;
+      return data;
+    }
+  }
+
+  async getWeightLogs(days: number = 30): Promise<WeightLog[]> {
+    this.assertBrowser();
+    const user = await this.getUser();
+    if (!user) return [];
+    const since = new Date();
+    since.setDate(since.getDate() - days);
+    const { data, error } = await this.supabase
+      .from('weight_logs')
+      .select('*')
+      .eq('user_id', user.id)
+      .gte('date', since.toISOString().split('T')[0])
+      .order('date', { ascending: true });
+    if (error) throw error;
+    return data ?? [];
+  }
+
+  async getTodayWeightLog(): Promise<WeightLog | null> {
+    this.assertBrowser();
+    const user = await this.getUser();
+    if (!user) return null;
+    const today = new Date().toISOString().split('T')[0];
+    const { data, error } = await this.supabase
+      .from('weight_logs')
+      .select('*')
+      .eq('user_id', user.id)
+      .eq('date', today)
+      .maybeSingle();
+    if (error) throw error;
+    return data;
   }
 
   // ─── Push Subscription ───────────────────────────

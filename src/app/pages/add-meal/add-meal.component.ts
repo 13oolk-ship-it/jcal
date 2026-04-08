@@ -10,6 +10,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { SupabaseService, Food } from '../../services/supabase.service';
 import { ToastService } from '../../services/toast.service';
+import { I18nService } from '../../services/i18n.service';
 
 interface MealEntry {
   foodId: number;
@@ -42,16 +43,17 @@ export class AddMealComponent implements OnInit {
   errorMessage = signal('');
 
   mealTypes = [
-    { value: 'breakfast', label: 'Breakfast', icon: 'free_breakfast' },
-    { value: 'lunch', label: 'Lunch', icon: 'lunch_dining' },
-    { value: 'dinner', label: 'Dinner', icon: 'dinner_dining' },
-    { value: 'snack', label: 'Snack', icon: 'cookie' },
+    { value: 'breakfast', labelKey: 'meal.breakfast', icon: 'free_breakfast' },
+    { value: 'lunch', labelKey: 'meal.lunch', icon: 'lunch_dining' },
+    { value: 'dinner', labelKey: 'meal.dinner', icon: 'dinner_dining' },
+    { value: 'snack', labelKey: 'meal.snack', icon: 'cookie' },
   ];
 
   constructor(
     private supabase: SupabaseService,
     private router: Router,
     private toast: ToastService,
+    public i18n: I18nService,
   ) {}
 
   ngOnInit() {
@@ -109,7 +111,7 @@ export class AddMealComponent implements OnInit {
   async onSubmit() {
     const validEntries = this.entries().filter(e => e.foodId && e.quantity > 0);
     if (validEntries.length === 0) {
-      this.errorMessage.set('Please add at least one food item.');
+      this.errorMessage.set(this.i18n.t('meal.addOneFoodItem'));
       return;
     }
 
@@ -123,7 +125,7 @@ export class AddMealComponent implements OnInit {
         await this.supabase.addMealItem(meal.id!, entry.foodId, entry.quantity);
       }
 
-      this.toast.success('Meal logged successfully! 🎉');
+      this.toast.success(this.i18n.t('meal.mealLogged'));
       this.router.navigate(['/dashboard']);
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Failed to log meal';

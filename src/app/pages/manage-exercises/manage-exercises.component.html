@@ -1,0 +1,231 @@
+<nav class="top-nav">
+  <button mat-icon-button routerLink="/dashboard">
+    <mat-icon>arrow_back</mat-icon>
+  </button>
+  <span class="nav-title">{{ i18n.t('me.title') }}</span>
+  <button mat-icon-button (click)="openAdd()" [matTooltip]="i18n.t('me.addExercise')">
+    <mat-icon>add_circle_outline</mat-icon>
+  </button>
+</nav>
+
+<div class="page">
+  <!-- Search bar -->
+  <div class="search-bar">
+    <mat-icon class="search-icon">search</mat-icon>
+    <input type="text" [placeholder]="i18n.t('me.searchExercises')" [(ngModel)]="searchQuery"
+      (input)="applyFilter()" class="search-input" />
+    @if (searchQuery) {
+      <button class="clear-btn" (click)="searchQuery = ''; applyFilter()">
+        <mat-icon>close</mat-icon>
+      </button>
+    }
+  </div>
+
+  <!-- Category filter tabs -->
+  <div class="category-tabs">
+    <button class="cat-tab" [class.active]="activeCategory() === 'all'"
+      (click)="selectCategory('all')">
+      <span>{{ i18n.t('me.all') }}</span>
+    </button>
+    <button class="cat-tab" [class.active]="activeCategory() === 'cardio'"
+      (click)="selectCategory('cardio')">
+      <mat-icon>favorite</mat-icon>
+      <span>{{ i18n.t('workout.cardio') }}</span>
+    </button>
+    <button class="cat-tab" [class.active]="activeCategory() === 'strength'"
+      (click)="selectCategory('strength')">
+      <mat-icon>fitness_center</mat-icon>
+      <span>{{ i18n.t('workout.strength') }}</span>
+    </button>
+    <button class="cat-tab" [class.active]="activeCategory() === 'flexibility'"
+      (click)="selectCategory('flexibility')">
+      <mat-icon>self_improvement</mat-icon>
+      <span>{{ i18n.t('workout.flexibility') }}</span>
+    </button>
+  </div>
+
+  <!-- Add form (slide in) -->
+  @if (showAddForm()) {
+    <div class="add-form-card animate-in">
+      <h3 class="form-card-title">
+        <mat-icon>add_circle</mat-icon> {{ i18n.t('me.addExercise') }}
+      </h3>
+      <div class="edit-row">
+        <label>{{ i18n.t('me.exerciseName') }}</label>
+        <input type="text" [(ngModel)]="addForm.name" class="edit-input full" [placeholder]="i18n.t('me.namePlaceholder')" />
+      </div>
+      <div class="edit-grid cols-2">
+        <div class="edit-field">
+          <label>{{ i18n.t('me.category') }}</label>
+          <select [(ngModel)]="addForm.category" class="edit-input">
+            @for (opt of categoryOptions; track opt.value) {
+              <option [value]="opt.value">{{ i18n.t(opt.labelKey) }}</option>
+            }
+          </select>
+        </div>
+        <div class="edit-field">
+          <label>{{ i18n.t('me.calPerMin') }}</label>
+          <input type="number" [(ngModel)]="addForm.cal_per_min" class="edit-input" min="0" step="0.5" />
+        </div>
+      </div>
+      <div class="edit-grid cols-2">
+        <div class="edit-field">
+          <label>{{ i18n.t('me.muscleGroup') }}</label>
+          <input type="text" [(ngModel)]="addForm.muscle" class="edit-input" [placeholder]="i18n.t('me.musclePlaceholder')" />
+        </div>
+        <div class="edit-field">
+          <label>{{ i18n.t('me.icon') }}</label>
+          <div class="icon-selector">
+            @for (ic of iconOptions; track ic) {
+              <button class="icon-opt" [class.active]="addForm.icon === ic"
+                (click)="addForm.icon = ic" type="button">
+                <mat-icon>{{ ic }}</mat-icon>
+              </button>
+            }
+          </div>
+        </div>
+      </div>
+      <div class="edit-actions">
+        <button mat-flat-button class="cancel-edit-btn" (click)="cancelAdd()">{{ i18n.t('common.cancel') }}</button>
+        <button mat-flat-button class="save-edit-btn" (click)="saveAdd()" [disabled]="adding() || !addForm.name.trim()">
+          @if (adding()) {
+            <mat-spinner diameter="18"></mat-spinner>
+          } @else {
+            <ng-container><mat-icon>check</mat-icon> {{ i18n.t('common.add') }}</ng-container>
+          }
+        </button>
+      </div>
+    </div>
+  }
+
+  @if (loading()) {
+    <div class="loading-center"><mat-spinner diameter="40"></mat-spinner></div>
+  } @else if (exercises().length === 0 && !showAddForm()) {
+    <div class="empty-state">
+      <div class="empty-icon"><mat-icon>fitness_center</mat-icon></div>
+      <h3>{{ i18n.t('me.noExercisesYet') }}</h3>
+      <p>{{ i18n.t('me.addFirstExercise') }}</p>
+      <button mat-flat-button class="primary-btn" (click)="openAdd()">
+        <mat-icon>add</mat-icon> {{ i18n.t('me.addExercise') }}
+      </button>
+    </div>
+  } @else {
+    @if (!showAddForm()) {
+      <div class="item-count">
+        <span>{{ filteredExercises().length }} {{ i18n.t('me.items') }}</span>
+      </div>
+    }
+
+    <div class="exercise-list">
+      @for (ex of filteredExercises(); track ex.id) {
+        <div class="exercise-item" [class.editing]="editingExercise()?.id === ex.id">
+          <!-- View mode -->
+          @if (editingExercise()?.id !== ex.id) {
+            <div class="exercise-item-main">
+              <div class="ex-icon-wrap" [class]="'cat-' + ex.category">
+                <mat-icon>{{ ex.icon }}</mat-icon>
+              </div>
+              <div class="exercise-info">
+                <span class="exercise-name">{{ ex.name }}</span>
+                <div class="exercise-tags">
+                  <span class="tag cat-tag">{{ i18n.t(getCategoryKey(ex.category)) }}</span>
+                  <span class="tag cal-tag">~{{ ex.cal_per_min }} {{ i18n.t('workout.calPerMin') }}</span>
+                  @if (ex.muscle) {
+                    <span class="tag muscle-tag">{{ ex.muscle }}</span>
+                  }
+                </div>
+              </div>
+              <div class="exercise-actions">
+                <button mat-icon-button (click)="startEdit(ex)" class="edit-btn" [matTooltip]="i18n.t('common.edit')">
+                  <mat-icon>edit</mat-icon>
+                </button>
+                <button mat-icon-button (click)="confirmDelete(ex)" class="del-btn" [matTooltip]="i18n.t('common.delete')">
+                  <mat-icon>delete_outline</mat-icon>
+                </button>
+              </div>
+            </div>
+          } @else {
+            <!-- Edit mode -->
+            <div class="edit-form">
+              <div class="edit-row">
+                <label>{{ i18n.t('me.exerciseName') }}</label>
+                <input type="text" [(ngModel)]="editForm.name" class="edit-input full" />
+              </div>
+              <div class="edit-grid cols-2">
+                <div class="edit-field">
+                  <label>{{ i18n.t('me.category') }}</label>
+                  <select [(ngModel)]="editForm.category" class="edit-input">
+                    @for (opt of categoryOptions; track opt.value) {
+                      <option [value]="opt.value">{{ i18n.t(opt.labelKey) }}</option>
+                    }
+                  </select>
+                </div>
+                <div class="edit-field">
+                  <label>{{ i18n.t('me.calPerMin') }}</label>
+                  <input type="number" [(ngModel)]="editForm.cal_per_min" class="edit-input" min="0" step="0.5" />
+                </div>
+              </div>
+              <div class="edit-grid cols-2">
+                <div class="edit-field">
+                  <label>{{ i18n.t('me.muscleGroup') }}</label>
+                  <input type="text" [(ngModel)]="editForm.muscle" class="edit-input" [placeholder]="i18n.t('me.musclePlaceholder')" />
+                </div>
+                <div class="edit-field">
+                  <label>{{ i18n.t('me.icon') }}</label>
+                  <div class="icon-selector">
+                    @for (ic of iconOptions; track ic) {
+                      <button class="icon-opt" [class.active]="editForm.icon === ic"
+                        (click)="editForm.icon = ic" type="button">
+                        <mat-icon>{{ ic }}</mat-icon>
+                      </button>
+                    }
+                  </div>
+                </div>
+              </div>
+              <div class="edit-actions">
+                <button mat-flat-button class="cancel-edit-btn" (click)="cancelEdit()">{{ i18n.t('common.cancel') }}</button>
+                <button mat-flat-button class="save-edit-btn" (click)="saveEdit()" [disabled]="saving()">
+                  @if (saving()) {
+                    <mat-spinner diameter="18"></mat-spinner>
+                  } @else {
+                    <ng-container><mat-icon>check</mat-icon> {{ i18n.t('common.save') }}</ng-container>
+                  }
+                </button>
+              </div>
+            </div>
+          }
+        </div>
+      }
+    </div>
+
+    @if (filteredExercises().length === 0 && searchQuery) {
+      <div class="no-results">
+        <mat-icon>search_off</mat-icon>
+        <p>{{ i18n.t('me.noResults') }} "{{ searchQuery }}"</p>
+      </div>
+    }
+  }
+</div>
+
+<!-- Delete confirm overlay -->
+@if (exerciseToDelete()) {
+  <div class="delete-overlay" (click)="cancelDelete()">
+    <div class="delete-dialog" (click)="$event.stopPropagation()">
+      <div class="delete-dialog-icon">
+        <mat-icon>delete_forever</mat-icon>
+      </div>
+      <h4>{{ i18n.t('me.deleteTitle') }} "{{ exerciseToDelete()!.name }}"?</h4>
+      <p>{{ i18n.t('me.deleteConfirm') }}</p>
+      <div class="delete-dialog-actions">
+        <button mat-flat-button class="dialog-cancel" (click)="cancelDelete()">{{ i18n.t('common.cancel') }}</button>
+        <button mat-flat-button class="dialog-confirm" (click)="deleteExercise()" [disabled]="deleting()">
+          @if (deleting()) {
+            <mat-spinner diameter="20"></mat-spinner>
+          } @else {
+            <ng-container>{{ i18n.t('common.delete') }}</ng-container>
+          }
+        </button>
+      </div>
+    </div>
+  </div>
+}

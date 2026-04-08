@@ -6,7 +6,7 @@
         <div class="pulse-ring">
           <mat-icon class="loading-logo">local_fire_department</mat-icon>
         </div>
-        <p class="loading-text">{{ isSignUp() ? 'Creating your account...' : 'Signing you in...' }}</p>
+        <p class="loading-text">{{ isSignUp() ? i18n.t('login.creatingAccount') : i18n.t('login.signingIn') }}</p>
         <div class="dot-loader">
           <span></span><span></span><span></span>
         </div>
@@ -21,13 +21,13 @@
         <mat-icon class="hero-icon">local_fire_department</mat-icon>
       </div>
       <h1>J-Cal</h1>
-      <p>Your personal calorie & nutrition tracker. Eat smarter, live healthier.</p>
+      <p>{{ i18n.t('login.tagline') }}</p>
       <div class="hero-stats">
-        <div class="stat"><span class="stat-num">2000</span><span class="stat-label">Daily Goal</span></div>
+        <div class="stat"><span class="stat-num">2000</span><span class="stat-label">{{ i18n.t('login.dailyGoal') }}</span></div>
         <div class="stat-divider"></div>
-        <div class="stat"><span class="stat-num">3</span><span class="stat-label">Macros</span></div>
+        <div class="stat"><span class="stat-num">3</span><span class="stat-label">{{ i18n.t('login.macros') }}</span></div>
         <div class="stat-divider"></div>
-        <div class="stat"><span class="stat-num">7</span><span class="stat-label">Day Chart</span></div>
+        <div class="stat"><span class="stat-num">7</span><span class="stat-label">{{ i18n.t('login.dayChart') }}</span></div>
       </div>
     </div>
   </div>
@@ -40,8 +40,8 @@
         <span>J-Cal</span>
       </div>
 
-      <h2>{{ isSignUp() ? 'Create your account' : 'Welcome back' }}</h2>
-      <p class="form-subtitle">{{ isSignUp() ? 'Start tracking your nutrition today' : 'Sign in to continue tracking' }}</p>
+      <h2>{{ isSignUp() ? i18n.t('login.createAccount') : i18n.t('login.welcomeBack') }}</h2>
+      <p class="form-subtitle">{{ isSignUp() ? i18n.t('login.signUpSubtitle') : i18n.t('login.signInSubtitle') }}</p>
 
       <div class="toggle-row">
         <button
@@ -49,13 +49,13 @@
           [class.active]="!isSignUp()"
           (click)="isSignUp() && toggleMode()"
           type="button"
-        >Sign In</button>
+        >{{ i18n.t('login.signIn') }}</button>
         <button
           mat-button
           [class.active]="isSignUp()"
           (click)="!isSignUp() && toggleMode()"
           type="button"
-        >Sign Up</button>
+        >{{ i18n.t('login.signUp') }}</button>
       </div>
 
       <form (ngSubmit)="onSubmit()" class="login-form">
@@ -63,19 +63,19 @@
           <div class="confirmation-banner">
             <mat-icon>mark_email_read</mat-icon>
             <div>
-              <strong>Check your email!</strong>
-              <p>We sent a confirmation link to <strong>{{ email }}</strong>. Please verify your email then sign in.</p>
+              <strong>{{ i18n.t('login.checkEmail') }}</strong>
+              <p>{{ i18n.t('login.confirmationSent') }} <strong>{{ email }}</strong>{{ i18n.t('login.verifyThenSignIn') }}</p>
             </div>
           </div>
         } @else {
         <mat-form-field appearance="outline" class="full-width">
-          <mat-label>Email</mat-label>
+          <mat-label>{{ i18n.t('login.email') }}</mat-label>
           <input matInput type="email" [(ngModel)]="email" name="email" required autocomplete="email" />
           <mat-icon matPrefix>email</mat-icon>
         </mat-form-field>
 
         <mat-form-field appearance="outline" class="full-width">
-          <mat-label>Password</mat-label>
+          <mat-label>{{ i18n.t('login.password') }}</mat-label>
           <input matInput type="password" [(ngModel)]="password" name="password" required autocomplete="current-password" />
           <mat-icon matPrefix>lock</mat-icon>
         </mat-form-field>
@@ -96,17 +96,17 @@
         >
           @if (loading()) {
             <mat-spinner diameter="22"></mat-spinner>
-            <span class="btn-loading-text">Please wait...</span>
+            <span class="btn-loading-text">{{ i18n.t('login.pleaseWait') }}</span>
           } @else {
-            <ng-container>{{ isSignUp() ? 'Create Account' : 'Sign In' }}</ng-container>
+            <ng-container>{{ isSignUp() ? i18n.t('login.signUp') : i18n.t('login.signIn') }}</ng-container>
           }
         </button>
         }
       </form>
 
       <p class="footer-text">
-        {{ isSignUp() ? 'Already have an account?' : "Don't have an account?" }}
-        <a (click)="toggleMode()" class="link">{{ isSignUp() ? 'Sign In' : 'Sign Up' }}</a>
+        {{ isSignUp() ? i18n.t('login.alreadyHaveAccount') : i18n.t('login.dontHaveAccount') }}
+        <a (click)="toggleMode()" class="link">{{ isSignUp() ? i18n.t('login.signIn') : i18n.t('login.signUp') }}</a>
       </p>
     </div>
   </div>

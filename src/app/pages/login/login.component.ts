@@ -9,6 +9,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatIconModule } from '@angular/material/icon';
 import { SupabaseService } from '../../services/supabase.service';
 import { ToastService } from '../../services/toast.service';
+import { I18nService } from '../../services/i18n.service';
 
 @Component({
   selector: 'app-login',
@@ -37,6 +38,7 @@ export class LoginComponent {
     private supabase: SupabaseService,
     private router: Router,
     private toast: ToastService,
+    public i18n: I18nService,
   ) {}
 
   toggleMode() {
@@ -47,7 +49,7 @@ export class LoginComponent {
 
   async onSubmit() {
     if (!this.email || !this.password) {
-      this.errorMessage.set('Please fill in all fields.');
+      this.errorMessage.set(this.i18n.t('login.fillAllFields'));
       return;
     }
 
@@ -59,12 +61,12 @@ export class LoginComponent {
         const data = await this.supabase.signUp(this.email, this.password);
         if (data.user && !data.session) {
           this.confirmationSent.set(true);
-          this.toast.success('Confirmation email sent! Check your inbox.');
+          this.toast.success(this.i18n.t('login.confirmationToast'));
           return;
         }
       }
       await this.supabase.signIn(this.email, this.password);
-      this.toast.success('Welcome back! 👋');
+      this.toast.success(this.i18n.t('login.welcomeBackToast'));
       this.router.navigate(['/dashboard']);
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'An error occurred';

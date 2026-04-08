@@ -10,6 +10,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { SupabaseService } from '../../services/supabase.service';
 import { FoodScannerService } from '../../services/food-scanner.service';
 import { ToastService } from '../../services/toast.service';
+import { I18nService } from '../../services/i18n.service';
 
 @Component({
   selector: 'app-add-food',
@@ -51,6 +52,7 @@ export class AddFoodComponent {
     private router: Router,
     private toast: ToastService,
     private scanner: FoodScannerService,
+    public i18n: I18nService,
   ) {}
 
   openCamera() {
@@ -113,7 +115,7 @@ export class AddFoodComponent {
 
   async onSubmit() {
     if (!this.name.trim()) {
-      this.errorMessage.set('Food name is required.');
+      this.errorMessage.set(this.i18n.t('food.foodNameRequired'));
       return;
     }
 
@@ -128,7 +130,7 @@ export class AddFoodComponent {
         carb: this.carb,
         fat: this.fat,
       });
-      this.toast.success('Food added successfully! 🎉');
+      this.toast.success(this.i18n.t('food.foodAdded'));
       this.router.navigate(['/dashboard']);
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : 'Failed to add food';

@@ -2,7 +2,7 @@
   <button mat-icon-button routerLink="/dashboard">
     <mat-icon>arrow_back</mat-icon>
   </button>
-  <span class="nav-title">Manage Foods</span>
+  <span class="nav-title">{{ i18n.t('manage.title') }}</span>
   <button mat-icon-button routerLink="/add-food" matTooltip="Add new food">
     <mat-icon>add_circle_outline</mat-icon>
   </button>
@@ -12,7 +12,7 @@
   <!-- Search bar -->
   <div class="search-bar">
     <mat-icon class="search-icon">search</mat-icon>
-    <input type="text" placeholder="Search foods..." [(ngModel)]="searchQuery"
+    <input type="text" [placeholder]="i18n.t('manage.searchFoods')" [(ngModel)]="searchQuery"
       (input)="applyFilter()" class="search-input" />
     @if (searchQuery) {
       <button class="clear-btn" (click)="searchQuery = ''; applyFilter()">
@@ -26,15 +26,15 @@
   } @else if (foods().length === 0) {
     <div class="empty-state">
       <div class="empty-icon"><mat-icon>fastfood</mat-icon></div>
-      <h3>No foods yet</h3>
-      <p>Add your first food item to get started</p>
+      <h3>{{ i18n.t('manage.noFoodsYet') }}</h3>
+      <p>{{ i18n.t('manage.addFirstFood') }}</p>
       <button mat-flat-button routerLink="/add-food" class="primary-btn">
-        <mat-icon>add</mat-icon> Add Food
+        <mat-icon>add</mat-icon> {{ i18n.t('food.title') }}
       </button>
     </div>
   } @else {
     <div class="food-count">
-      <span>{{ filteredFoods().length }} food{{ filteredFoods().length !== 1 ? 's' : '' }}</span>
+      <span>{{ filteredFoods().length }} {{ filteredFoods().length !== 1 ? i18n.t('manage.foods') : i18n.t('manage.food') }}</span>
     </div>
 
     <div class="food-list">
@@ -65,34 +65,34 @@
             <!-- Edit mode -->
             <div class="edit-form">
               <div class="edit-row">
-                <label>Name</label>
+                <label>{{ i18n.t('manage.name') }}</label>
                 <input type="text" [(ngModel)]="editForm.name" class="edit-input full" />
               </div>
               <div class="edit-grid">
                 <div class="edit-field">
-                  <label>Calories</label>
+                  <label>{{ i18n.t('manage.calories') }}</label>
                   <input type="number" [(ngModel)]="editForm.calories" class="edit-input" min="0" />
                 </div>
                 <div class="edit-field">
-                  <label>Protein</label>
+                  <label>{{ i18n.t('manage.protein') }}</label>
                   <input type="number" [(ngModel)]="editForm.protein" class="edit-input" min="0" />
                 </div>
                 <div class="edit-field">
-                  <label>Carb</label>
+                  <label>{{ i18n.t('manage.carb') }}</label>
                   <input type="number" [(ngModel)]="editForm.carb" class="edit-input" min="0" />
                 </div>
                 <div class="edit-field">
-                  <label>Fat</label>
+                  <label>{{ i18n.t('manage.fat') }}</label>
                   <input type="number" [(ngModel)]="editForm.fat" class="edit-input" min="0" />
                 </div>
               </div>
               <div class="edit-actions">
-                <button mat-flat-button class="cancel-edit-btn" (click)="cancelEdit()">Cancel</button>
+                <button mat-flat-button class="cancel-edit-btn" (click)="cancelEdit()">{{ i18n.t('common.cancel') }}</button>
                 <button mat-flat-button class="save-edit-btn" (click)="saveEdit()" [disabled]="saving()">
                   @if (saving()) {
                     <mat-spinner diameter="18"></mat-spinner>
                   } @else {
-                    <ng-container><mat-icon>check</mat-icon> Save</ng-container>
+                    <ng-container><mat-icon>check</mat-icon> {{ i18n.t('common.save') }}</ng-container>
                   }
                 </button>
               </div>
@@ -105,7 +105,7 @@
     @if (filteredFoods().length === 0 && searchQuery) {
       <div class="no-results">
         <mat-icon>search_off</mat-icon>
-        <p>No foods match "{{ searchQuery }}"</p>
+        <p>{{ i18n.t('manage.noResults') }} "{{ searchQuery }}"</p>
       </div>
     }
   }
@@ -118,15 +118,15 @@
       <div class="delete-dialog-icon">
         <mat-icon>delete_forever</mat-icon>
       </div>
-      <h4>Delete "{{ foodToDelete()!.name }}"?</h4>
-      <p>This food will be permanently removed. Meals that used it will keep their records.</p>
+      <h4>{{ i18n.t('manage.deleteTitle') }} "{{ foodToDelete()!.name }}"?</h4>
+      <p>{{ i18n.t('manage.deleteConfirm') }}</p>
       <div class="delete-dialog-actions">
-        <button mat-flat-button class="dialog-cancel" (click)="cancelDelete()">Cancel</button>
+        <button mat-flat-button class="dialog-cancel" (click)="cancelDelete()">{{ i18n.t('common.cancel') }}</button>
         <button mat-flat-button class="dialog-confirm" (click)="deleteFood()" [disabled]="deleting()">
           @if (deleting()) {
             <mat-spinner diameter="20"></mat-spinner>
           } @else {
-            <ng-container>Delete</ng-container>
+            <ng-container>{{ i18n.t('common.delete') }}</ng-container>
           }
         </button>
       </div>

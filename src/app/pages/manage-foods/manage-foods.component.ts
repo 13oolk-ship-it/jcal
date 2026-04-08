@@ -8,6 +8,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { SupabaseService, Food } from '../../services/supabase.service';
 import { ToastService } from '../../services/toast.service';
+import { I18nService } from '../../services/i18n.service';
 
 @Component({
   selector: 'app-manage-foods',
@@ -43,6 +44,7 @@ export class ManageFoodsComponent implements OnInit {
     private supabase: SupabaseService,
     private router: Router,
     private toast: ToastService,
+    public i18n: I18nService,
   ) {}
 
   ngOnInit() {
@@ -103,10 +105,10 @@ export class ManageFoodsComponent implements OnInit {
       this.foods.update(list => list.map(f => f.id === food.id ? updated : f));
       this.applyFilter();
       this.editingFood.set(null);
-      this.toast.success('Food updated!');
+      this.toast.success(this.i18n.t('manage.foodUpdated'));
     } catch (err) {
       console.error('Failed to update food', err);
-      this.toast.error('Failed to update');
+      this.toast.error(this.i18n.t('manage.failedUpdate'));
     } finally {
       this.saving.set(false);
     }
@@ -131,10 +133,10 @@ export class ManageFoodsComponent implements OnInit {
       this.foods.update(list => list.filter(f => f.id !== food.id));
       this.applyFilter();
       this.foodToDelete.set(null);
-      this.toast.success('Food deleted');
+      this.toast.success(this.i18n.t('manage.foodDeleted'));
     } catch (err) {
       console.error('Failed to delete food', err);
-      this.toast.error('Failed to delete — food may be used in meals');
+      this.toast.error(this.i18n.t('manage.failedDelete'));
     } finally {
       this.deleting.set(false);
     }
