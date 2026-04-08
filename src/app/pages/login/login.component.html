@@ -59,6 +59,15 @@
       </div>
 
       <form (ngSubmit)="onSubmit()" class="login-form">
+        @if (confirmationSent()) {
+          <div class="confirmation-banner">
+            <mat-icon>mark_email_read</mat-icon>
+            <div>
+              <strong>Check your email!</strong>
+              <p>We sent a confirmation link to <strong>{{ email }}</strong>. Please verify your email then sign in.</p>
+            </div>
+          </div>
+        } @else {
         <mat-form-field appearance="outline" class="full-width">
           <mat-label>Email</mat-label>
           <input matInput type="email" [(ngModel)]="email" name="email" required autocomplete="email" />
@@ -92,6 +101,7 @@
             <ng-container>{{ isSignUp() ? 'Create Account' : 'Sign In' }}</ng-container>
           }
         </button>
+        }
       </form>
 
       <p class="footer-text">

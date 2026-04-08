@@ -358,3 +358,33 @@
   font-size: 14px;
   color: rgba(255,255,255,.85);
 }
+
+/* ── Confirmation banner ── */
+.confirmation-banner {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  background: #f0edff;
+  border: 1px solid #d5cffc;
+  border-radius: 14px;
+  padding: 18px 16px;
+  margin-bottom: 8px;
+}
+
+.confirmation-banner mat-icon {
+  color: #6c5ce7;
+  font-size: 28px;
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.confirmation-banner strong { color: #1a1a2e; }
+
+.confirmation-banner p {
+  margin: 4px 0 0;
+  font-size: 13px;
+  color: #555;
+  line-height: 1.5;
+}

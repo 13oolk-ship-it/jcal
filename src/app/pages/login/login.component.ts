@@ -31,6 +31,7 @@ export class LoginComponent {
   loading = signal(false);
   errorMessage = signal('');
   isSignUp = signal(false);
+  confirmationSent = signal(false);
 
   constructor(
     private supabase: SupabaseService,
@@ -41,6 +42,7 @@ export class LoginComponent {
   toggleMode() {
     this.isSignUp.update(v => !v);
     this.errorMessage.set('');
+    this.confirmationSent.set(false);
   }
 
   async onSubmit() {
@@ -54,7 +56,12 @@ export class LoginComponent {
 
     try {
       if (this.isSignUp()) {
-        await this.supabase.signUp(this.email, this.password);
+        const data = await this.supabase.signUp(this.email, this.password);
+        if (data.user && !data.session) {
+          this.confirmationSent.set(true);
+          this.toast.success('Confirmation email sent! Check your inbox.');
+          return;
+        }
       }
       await this.supabase.signIn(this.email, this.password);
       this.toast.success('Welcome back! 👋');
