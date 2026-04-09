@@ -59,6 +59,9 @@
                     @for (food of foods(); track food.id) {
                       <mat-option [value]="food.id">
                         <div class="option-row">
+                          @if (food.image_url) {
+                            <img [src]="food.image_url" alt="" class="option-thumb" />
+                          }
                           <span class="option-name">{{ food.name }}</span>
                           <span class="option-kcal">{{ food.calories }} kcal</span>
                         </div>

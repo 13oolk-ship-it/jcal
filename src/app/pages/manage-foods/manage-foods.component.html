@@ -43,6 +43,15 @@
           <!-- View mode -->
           @if (editingFood()?.id !== food.id) {
             <div class="food-item-main">
+              <div class="food-thumb-wrap">
+                @if (food.image_url) {
+                  <img [src]="food.image_url" alt="" class="food-thumb" />
+                } @else {
+                  <div class="food-thumb-placeholder">
+                    <mat-icon>fastfood</mat-icon>
+                  </div>
+                }
+              </div>
               <div class="food-info">
                 <span class="food-name">{{ food.name }}</span>
                 <div class="food-macros">

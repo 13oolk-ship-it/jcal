@@ -271,8 +271,16 @@
   justify-content: space-between;
   align-items: center;
   width: 100%;
-  gap: 12px;
+  gap: 10px;
   padding: 14px 18px;
+}
+
+::ng-deep .food-select-panel .option-thumb {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  object-fit: cover;
+  flex-shrink: 0;
 }
 
 ::ng-deep .food-select-panel .option-name {

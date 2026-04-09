@@ -10,6 +10,7 @@ export interface Food {
   protein: number;
   carb: number;
   fat: number;
+  image_url?: string;
 }
 
 export interface Meal {
@@ -214,6 +215,29 @@ export class SupabaseService {
     }
     url += '?t=' + Date.now();
     await this.upsertProfile({ avatar_url: url });
+    return url;
+  }
+
+  // ─── Food Images ─────────────────────────────────
+  async uploadFoodImage(base64: string, mimeType: string): Promise<string> {
+    this.assertBrowser();
+    const user = await this.getUser();
+    if (!user) throw new Error('Not authenticated');
+    const ext = mimeType.split('/')[1] || 'jpeg';
+    const path = `${user.id}/${Date.now()}.${ext}`;
+    const byteChars = atob(base64);
+    const bytes = new Uint8Array(byteChars.length);
+    for (let i = 0; i < byteChars.length; i++) bytes[i] = byteChars.charCodeAt(i);
+    const blob = new Blob([bytes], { type: mimeType });
+    const { error } = await this.supabase.storage
+      .from('food-images')
+      .upload(path, blob, { upsert: true });
+    if (error) throw error;
+    const { data } = this.supabase.storage.from('food-images').getPublicUrl(path);
+    let url = data.publicUrl;
+    if (!url.includes('/object/public/')) {
+      url = url.replace('/object/', '/object/public/');
+    }
     return url;
   }
 

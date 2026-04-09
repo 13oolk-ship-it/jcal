@@ -123,12 +123,18 @@ export class AddFoodComponent {
     this.errorMessage.set('');
 
     try {
+      let image_url: string | undefined;
+      if (this.imageBase64) {
+        image_url = await this.supabase.uploadFoodImage(this.imageBase64, this.imageMimeType);
+      }
+
       await this.supabase.addFood({
         name: this.name.trim(),
         calories: this.calories,
         protein: this.protein,
         carb: this.carb,
         fat: this.fat,
+        ...(image_url ? { image_url } : {}),
       });
       this.toast.success(this.i18n.t('food.foodAdded'));
       this.router.navigate(['/dashboard']);
