@@ -58,6 +58,18 @@ export const routes: Routes = [
     data: { animation: 'ManageExercisesPage' },
   },
   {
+    path: 'water-intake',
+    loadComponent: () => import('./pages/water-intake/water-intake.component').then(m => m.WaterIntakeComponent),
+    canActivate: [authGuard, profileGuard],
+    data: { animation: 'WaterIntakePage' },
+  },
+  {
+    path: 'workout-program',
+    loadComponent: () => import('./pages/workout-program/workout-program.component').then(m => m.WorkoutProgramComponent),
+    canActivate: [authGuard, profileGuard],
+    data: { animation: 'WorkoutProgramPage' },
+  },
+  {
     path: 'notification-settings',
     loadComponent: () => import('./pages/notification-settings/notification-settings.component').then(m => m.NotificationSettingsComponent),
     canActivate: [authGuard, profileGuard],

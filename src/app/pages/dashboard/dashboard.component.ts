@@ -8,7 +8,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { BaseChartDirective } from 'ng2-charts';
 import { ChartConfiguration } from 'chart.js';
-import { SupabaseService, Meal, Profile, Workout, WeightLog } from '../../services/supabase.service';
+import { SupabaseService, Meal, Profile, Workout, WeightLog, WaterIntake } from '../../services/supabase.service';
 import { ToastService } from '../../services/toast.service';
 import { I18nService, Lang } from '../../services/i18n.service';
 import { ThemeService, ThemeId } from '../../services/theme.service';
@@ -55,6 +55,15 @@ export class DashboardComponent implements OnInit {
     const logs = this.weightLogs();
     if (logs.length < 2) return 0;
     return +(logs[logs.length - 1].weight - logs[0].weight).toFixed(1);
+  });
+
+  // Water intake
+  waterAmount = signal(0);
+  waterTarget = signal(2000);
+  waterPercent = computed(() => {
+    const target = this.waterTarget();
+    if (target <= 0) return 0;
+    return Math.min(100, Math.round((this.waterAmount() / target) * 100));
   });
 
   // Computed profile helpers
@@ -232,6 +241,8 @@ export class DashboardComponent implements OnInit {
 
       // Load weight tracking data
       this.loadWeightData();
+      // Load water intake data
+      this.loadWaterData();
     } catch (err) {
       console.error('Failed to load dashboard', err);
     } finally {
@@ -404,6 +415,20 @@ export class DashboardComponent implements OnInit {
       this.toast.error(this.i18n.t('dash.failedDeleteMeal'));
     } finally {
       this.deletingMealId.set(null);
+    }
+  }
+
+  // ─── Water Intake ───────────────────────────────
+  private async loadWaterData() {
+    try {
+      const today = new Date().toISOString().split('T')[0];
+      const record = await this.supabase.getWaterIntakeForDate(today);
+      if (record) {
+        this.waterAmount.set(record.amount_ml);
+        this.waterTarget.set(record.target_ml);
+      }
+    } catch (err) {
+      console.error('Failed to load water data', err);
     }
   }
 

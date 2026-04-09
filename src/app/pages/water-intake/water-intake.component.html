@@ -1,0 +1,133 @@
+<!-- Top Header -->
+<header class="water-header">
+  <button class="back-btn" (click)="goBack()">
+    <mat-icon>chevron_left</mat-icon>
+  </button>
+  <h1 class="header-title">{{ i18n.t('water.title') }}</h1>
+  <button class="menu-btn" [matMenuTriggerFor]="headerMenu">
+    <mat-icon>more_horiz</mat-icon>
+  </button>
+  <mat-menu #headerMenu="matMenu">
+    <button mat-menu-item (click)="openTargetDialog()">
+      <mat-icon>flag</mat-icon> {{ i18n.t('water.setTarget') }}
+    </button>
+  </mat-menu>
+</header>
+
+@if (loading()) {
+  <div class="loading-center"><mat-spinner diameter="40"></mat-spinner></div>
+} @else {
+  <div class="water-page">
+
+    <!-- Motivational Text -->
+    <p class="motivational-text">{{ i18n.t('water.motivational') }}</p>
+
+    <!-- Water Drop Visual -->
+    <div class="drop-container">
+      <div class="water-drop">
+        <div class="water-fill" [style.height.%]="percent()"></div>
+        <div class="drop-label">
+          <span class="percent-value">{{ percent() }}%</span>
+        </div>
+      </div>
+      <p class="amount-text">
+        {{ currentAmount() }}{{ i18n.t('water.ml') }} {{ i18n.t('water.of') }} {{ targetAmount() }}{{ i18n.t('water.ml') }}
+      </p>
+    </div>
+
+    <!-- Month & Week Calendar -->
+    <div class="calendar-section">
+      <div class="month-nav">
+        <button class="nav-arrow" (click)="prevWeek()">
+          <mat-icon>chevron_left</mat-icon>
+        </button>
+        <span class="month-label">{{ monthLabel() }}</span>
+        <button class="nav-arrow" (click)="nextWeek()">
+          <mat-icon>chevron_right</mat-icon>
+        </button>
+      </div>
+      <div class="week-row">
+        @for (day of weekDays(); track day.day) {
+          <button
+            class="day-cell"
+            [class.selected]="day.isSelected"
+            [class.today]="day.isToday"
+            (click)="selectDay(day)">
+            <span class="day-number">{{ day.day }}</span>
+            <span class="day-label">{{ day.label }}</span>
+          </button>
+        }
+      </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="action-buttons">
+      <button class="action-card" (click)="openTargetDialog()">
+        <mat-icon class="action-icon">flag</mat-icon>
+        <span>{{ i18n.t('water.target') }}</span>
+      </button>
+      <button class="action-card" (click)="addWater(250)">
+        <mat-icon class="action-icon">event_note</mat-icon>
+        <span>{{ i18n.t('water.plan') }}</span>
+      </button>
+      <button class="action-card" (click)="addWater(250)">
+        <mat-icon class="action-icon">add_circle</mat-icon>
+        <span>{{ i18n.t('water.record') }}</span>
+      </button>
+    </div>
+
+    <!-- Quick Add Buttons -->
+    <div class="quick-add">
+      <h3 class="section-label">{{ i18n.t('water.addWater') }}</h3>
+      <div class="quick-buttons">
+        <button class="quick-btn" (click)="addWater(100)">+100ml</button>
+        <button class="quick-btn" (click)="addWater(250)">+250ml</button>
+        <button class="quick-btn" (click)="addWater(500)">+500ml</button>
+      </div>
+    </div>
+
+    <!-- Water Logs -->
+    @if (logs().length) {
+      <div class="logs-section">
+        <h3 class="section-label">{{ i18n.t('water.logs') }}</h3>
+        <div class="logs-list">
+          @for (log of logs(); track log.id) {
+            <div class="log-item">
+              <div class="log-left">
+                <mat-icon class="log-icon">water_drop</mat-icon>
+                <div class="log-info">
+                  <span class="log-amount">+{{ log.amount_ml }}{{ i18n.t('water.ml') }}</span>
+                  <span class="log-time">{{ formatTime(log.created_at) }}</span>
+                </div>
+              </div>
+              <button class="log-delete" (click)="deleteLog(log)" [disabled]="deletingLogId() === log.id">
+                @if (deletingLogId() === log.id) {
+                  <mat-spinner diameter="18"></mat-spinner>
+                } @else {
+                  <mat-icon>delete_outline</mat-icon>
+                }
+              </button>
+            </div>
+          }
+        </div>
+      </div>
+    }
+  </div>
+}
+
+<!-- Target Dialog Overlay -->
+@if (showTargetDialog()) {
+  <div class="dialog-overlay" (click)="closeTargetDialog()">
+    <div class="dialog-card" (click)="$event.stopPropagation()">
+      <h3>{{ i18n.t('water.setTarget') }}</h3>
+      <div class="dialog-field">
+        <label>{{ i18n.t('water.targetMl') }}</label>
+        <input type="number" [(ngModel)]="newTarget" min="500" max="10000" step="100">
+      </div>
+      <div class="dialog-actions">
+        <button class="dialog-btn cancel" (click)="closeTargetDialog()">{{ i18n.t('common.cancel') }}</button>
+        <button class="dialog-btn confirm" (click)="saveTarget()">{{ i18n.t('common.save') }}</button>
+      </div>
+    </div>
+  </div>
+}

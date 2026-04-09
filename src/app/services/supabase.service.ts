@@ -80,6 +80,33 @@ export interface WeightLog {
   created_at?: string;
 }
 
+export interface WaterIntake {
+  id?: number;
+  user_id?: string;
+  amount_ml: number;
+  target_ml: number;
+  date: string;
+  created_at?: string;
+}
+
+export interface WaterLog {
+  id?: number;
+  user_id?: string;
+  amount_ml: number;
+  date: string;
+  created_at?: string;
+}
+
+export interface ProgramDayLog {
+  id?: number;
+  user_id?: string;
+  program_id: string;
+  day: number;
+  completed: boolean;
+  date: string;
+  created_at?: string;
+}
+
 @Injectable({ providedIn: 'root' })
 export class SupabaseService {
   private supabase!: SupabaseClient;
@@ -480,6 +507,133 @@ export class SupabaseService {
       .eq('user_id', user.id)
       .eq('date', today)
       .maybeSingle();
+    if (error) throw error;
+    return data;
+  }
+
+  // ─── Water Intake ────────────────────────────────
+  async getWaterIntakeForDate(date: string): Promise<WaterIntake | null> {
+    this.assertBrowser();
+    const user = await this.getUser();
+    if (!user) throw new Error('Not authenticated');
+    const { data, error } = await this.supabase
+      .from('water_intake')
+      .select('*')
+      .eq('user_id', user.id)
+      .eq('date', date)
+      .maybeSingle();
+    if (error) throw error;
+    return data;
+  }
+
+  async upsertWaterIntake(amount_ml: number, target_ml: number, date: string): Promise<WaterIntake> {
+    this.assertBrowser();
+    const user = await this.getUser();
+    if (!user) throw new Error('Not authenticated');
+    const { data, error } = await this.supabase
+      .from('water_intake')
+      .upsert({ user_id: user.id, amount_ml, target_ml, date }, { onConflict: 'user_id,date' })
+      .select()
+      .single();
+    if (error) throw error;
+    return data;
+  }
+
+  async getWaterIntakeForWeek(startDate: string, endDate: string): Promise<WaterIntake[]> {
+    this.assertBrowser();
+    const user = await this.getUser();
+    if (!user) throw new Error('Not authenticated');
+    const { data, error } = await this.supabase
+      .from('water_intake')
+      .select('*')
+      .eq('user_id', user.id)
+      .gte('date', startDate)
+      .lte('date', endDate)
+      .order('date');
+    if (error) throw error;
+    return data ?? [];
+  }
+
+  async getLatestWaterTarget(): Promise<number | null> {
+    this.assertBrowser();
+    const user = await this.getUser();
+    if (!user) throw new Error('Not authenticated');
+    const { data, error } = await this.supabase
+      .from('water_intake')
+      .select('target_ml')
+      .eq('user_id', user.id)
+      .order('date', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    if (error) throw error;
+    return data?.target_ml ?? null;
+  }
+
+  // ─── Water Logs ──────────────────────────────────
+  async addWaterLog(amount_ml: number, date: string): Promise<WaterLog> {
+    this.assertBrowser();
+    const user = await this.getUser();
+    if (!user) throw new Error('Not authenticated');
+    const { data, error } = await this.supabase
+      .from('water_logs')
+      .insert({ user_id: user.id, amount_ml, date })
+      .select()
+      .single();
+    if (error) throw error;
+    return data;
+  }
+
+  async getWaterLogsForDate(date: string): Promise<WaterLog[]> {
+    this.assertBrowser();
+    const user = await this.getUser();
+    if (!user) throw new Error('Not authenticated');
+    const { data, error } = await this.supabase
+      .from('water_logs')
+      .select('*')
+      .eq('user_id', user.id)
+      .eq('date', date)
+      .order('created_at', { ascending: false });
+    if (error) throw error;
+    return data ?? [];
+  }
+
+  async deleteWaterLog(id: number): Promise<void> {
+    this.assertBrowser();
+    const { error } = await this.supabase
+      .from('water_logs')
+      .delete()
+      .eq('id', id);
+    if (error) throw error;
+  }
+
+  // ─── Program Day Logs ────────────────────────────
+  async getProgramDayLogs(programId: string): Promise<ProgramDayLog[]> {
+    this.assertBrowser();
+    const user = await this.getUser();
+    if (!user) throw new Error('Not authenticated');
+    const { data, error } = await this.supabase
+      .from('program_day_logs')
+      .select('*')
+      .eq('user_id', user.id)
+      .eq('program_id', programId)
+      .order('day');
+    if (error) throw error;
+    return data ?? [];
+  }
+
+  async toggleProgramDay(programId: string, day: number, completed: boolean): Promise<ProgramDayLog> {
+    this.assertBrowser();
+    const user = await this.getUser();
+    if (!user) throw new Error('Not authenticated');
+    const date = new Date().toISOString().split('T')[0];
+    const { data, error } = await this.supabase
+      .from('program_day_logs')
+      .upsert(
+        { user_id: user.id, program_id: programId, day, completed, date },
+        { onConflict: 'user_id,program_id,day' }
+      )
+      .select()
+      .single();
     if (error) throw error;
     return data;
   }

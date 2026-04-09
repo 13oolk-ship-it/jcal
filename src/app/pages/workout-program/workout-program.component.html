@@ -1,0 +1,173 @@
+<!-- Header -->
+<header class="prog-header">
+  <button class="back-btn" (click)="goBack()">
+    <mat-icon>chevron_left</mat-icon>
+  </button>
+  <div class="header-center">
+    <h1 class="header-title">🔥 Kettlebell 30 Days</h1>
+    <p class="header-sub">{{ i18n.t('kb.subtitle') }}</p>
+  </div>
+  <div class="header-spacer"></div>
+</header>
+
+@if (loading()) {
+  <div class="loading-center"><mat-spinner diameter="40"></mat-spinner></div>
+} @else {
+  <div class="prog-page">
+
+    <!-- ===== Progress Overview ===== -->
+    <section class="progress-hero">
+      <div class="progress-ring-wrap">
+        <svg viewBox="0 0 120 120" class="progress-ring">
+          <circle cx="60" cy="60" r="52" class="ring-track"/>
+          <circle cx="60" cy="60" r="52" class="ring-bar"
+            [style.stroke-dasharray]="326.73"
+            [style.stroke-dashoffset]="326.73 - (326.73 * progressPercent()) / 100"/>
+        </svg>
+        <div class="ring-center">
+          <span class="ring-pct">{{ progressPercent() }}%</span>
+        </div>
+      </div>
+      <div class="progress-stats">
+        <div class="pstat">
+          <span class="pstat-val">{{ completedCount() }}<small>/{{ totalDays }}</small></span>
+          <span class="pstat-lbl">{{ i18n.t('kb.daysCompleted') }}</span>
+        </div>
+        <div class="pstat">
+          <span class="pstat-val">🔥 {{ currentStreak() }}</span>
+          <span class="pstat-lbl">{{ i18n.t('kb.streak') }}</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== Phases ===== -->
+    @for (phase of phases; track phase.id) {
+      <section class="phase-section">
+        <!-- Phase Header -->
+        <div class="phase-header" [style.border-left-color]="phase.color">
+          <div class="phase-badge" [style.background]="phase.color">
+            <mat-icon>{{ phase.icon }}</mat-icon>
+          </div>
+          <div class="phase-info">
+            <h2 class="phase-title">{{ i18n.t(phase.titleKey) }}</h2>
+            <p class="phase-sub">{{ i18n.t(phase.subtitleKey) }}</p>
+          </div>
+          <div class="phase-meta">
+            <span class="meta-chip">{{ phase.sets }} {{ i18n.t('kb.sets') }}</span>
+            <span class="meta-chip">⏱ {{ phase.duration }}</span>
+          </div>
+        </div>
+
+        <!-- Day Grid -->
+        <div class="day-grid">
+          @for (day of getDaysArray(phase); track day) {
+            <button
+              class="day-chip"
+              [class.completed]="isDayCompleted(day)"
+              [class.selected]="selectedDay() === day"
+              [style.--phase-color]="phase.color"
+              (click)="selectDay(day)">
+              <span class="day-num">{{ day }}</span>
+              @if (isDayCompleted(day)) {
+                <mat-icon class="day-check">check</mat-icon>
+              }
+            </button>
+          }
+        </div>
+
+        <!-- Expanded Day Detail (show when a day in this phase is selected) -->
+        @if (selectedDay() !== null && selectedDay()! >= phase.days[0] && selectedDay()! <= phase.days[1]) {
+          <div class="day-detail" [style.border-color]="phase.color + '40'">
+            <div class="detail-top">
+              <h3>{{ i18n.t('kb.day') }} {{ selectedDay() }}</h3>
+              @if (phase.style === 'hiit') {
+                <span class="hiit-badge">HIIT</span>
+              }
+              <span class="rest-chip">{{ i18n.t('kb.rest') }}: {{ phase.rest }}</span>
+            </div>
+
+            <!-- Exercise Cards -->
+            <div class="exercise-list">
+              @for (ex of phase.exercises; track ex.name) {
+                <div class="exercise-card">
+                  <div class="ex-left">
+                    <div class="ex-icon-wrap" [style.background]="phase.color + '18'" [style.color]="phase.color">
+                      <mat-icon>{{ ex.icon }}</mat-icon>
+                    </div>
+                    <div class="ex-info">
+                      <span class="ex-name">{{ i18n.t(ex.nameKey) }}</span>
+                      <span class="ex-reps">{{ ex.reps }}</span>
+                    </div>
+                  </div>
+                  <button class="ex-demo-btn" (click)="openVideo(ex.name)" [style.color]="phase.color">
+                    <mat-icon>play_circle</mat-icon>
+                  </button>
+                </div>
+              }
+            </div>
+
+            <!-- Complete Day Button -->
+            <button
+              class="complete-btn"
+              [class.undo]="isDayCompleted(selectedDay()!)"
+              [style.background]="isDayCompleted(selectedDay()!) ? '#f0f0f0' : phase.color"
+              [disabled]="togglingDay() === selectedDay()"
+              (click)="toggleDay(selectedDay()!)">
+              @if (togglingDay() === selectedDay()) {
+                <mat-spinner diameter="20"></mat-spinner>
+              } @else if (isDayCompleted(selectedDay()!)) {
+                <mat-icon>undo</mat-icon>
+                <span>{{ i18n.t('kb.markIncomplete') }}</span>
+              } @else {
+                <mat-icon>check_circle</mat-icon>
+                <span>{{ i18n.t('kb.markComplete') }}</span>
+              }
+            </button>
+          </div>
+        }
+      </section>
+    }
+
+    <!-- ===== Tips Section ===== -->
+    <section class="tips-section">
+      <h3><mat-icon>tips_and_updates</mat-icon> {{ i18n.t('kb.tips') }}</h3>
+      <ul class="tips-list">
+        <li>{{ i18n.t('kb.tip1') }}</li>
+        <li>{{ i18n.t('kb.tip2') }}</li>
+        <li>{{ i18n.t('kb.tip3') }}</li>
+        <li>{{ i18n.t('kb.tip4') }}</li>
+      </ul>
+    </section>
+  </div>
+}
+
+<!-- Video Demo Modal -->
+@if (showVideoDay()) {
+  <div class="video-overlay" (click)="closeVideo()">
+    <div class="video-modal" (click)="$event.stopPropagation()">
+      @if (getVideoExercise(); as ex) {
+        <div class="video-header">
+          <h3>{{ i18n.t(ex.nameKey) }}</h3>
+          <button class="close-btn" (click)="closeVideo()">
+            <mat-icon>close</mat-icon>
+          </button>
+        </div>
+        <div class="video-body">
+          <div class="video-embed-wrap">
+            <iframe
+              [src]="getSafeUrl(ex.imageUrl)"
+              frameborder="0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowfullscreen
+              class="demo-iframe">
+            </iframe>
+          </div>
+          <div class="video-tip">
+            <mat-icon>lightbulb</mat-icon>
+            <p>{{ i18n.t(ex.tipKey) }}</p>
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+}

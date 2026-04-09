@@ -20,6 +20,9 @@
     <button mat-icon-button routerLink="/add-food" [matTooltip]="i18n.t('dash.addFood')">
       <mat-icon>add_circle_outline</mat-icon>
     </button>
+    <button mat-icon-button routerLink="/water-intake" [matTooltip]="i18n.t('dash.waterIntake')">
+      <mat-icon>water_drop</mat-icon>
+    </button>
     <button mat-icon-button [matMenuTriggerFor]="menu" class="avatar-btn">
       @if (avatarUrl()) {
         <img [src]="avatarUrl()" alt="Profile" class="nav-avatar">
@@ -132,6 +135,18 @@
       </button>
     </section>
 
+    <!-- ===== Workout Program Banner ===== -->
+    <section class="program-banner" routerLink="/workout-program">
+      <div class="banner-icon-wrap">
+        <mat-icon>local_fire_department</mat-icon>
+      </div>
+      <div class="banner-info">
+        <h3>🔥 Kettlebell 30 Days</h3>
+        <p>{{ i18n.t('dash.programSub') }}</p>
+      </div>
+      <mat-icon class="banner-arrow">chevron_right</mat-icon>
+    </section>
+
     <!-- ===== Macros with Progress Bars ===== -->
     <section class="macros-section">
       <h3 class="section-title">{{ i18n.t('dash.macros') }}</h3>
@@ -172,6 +187,28 @@
           <span class="macro-label">{{ i18n.t('dash.fat') }}</span>
         </div>
       </div>
+    </section>
+
+    <!-- ===== Water Intake Widget ===== -->
+    <section class="water-widget" routerLink="/water-intake">
+      <div class="water-widget-left">
+        <div class="water-mini-drop">
+          <div class="water-mini-fill" [style.height.%]="waterPercent()"></div>
+          <span class="water-mini-pct">{{ waterPercent() }}%</span>
+        </div>
+      </div>
+      <div class="water-widget-info">
+        <h3 class="section-title">{{ i18n.t('dash.waterTitle') }}</h3>
+        <p class="water-widget-amount">
+          {{ waterAmount() }}<small>ml</small>
+          <span class="water-widget-sep">/</span>
+          {{ waterTarget() }}<small>ml</small>
+        </p>
+        <div class="water-widget-bar-track">
+          <div class="water-widget-bar-fill" [style.width.%]="waterPercent()"></div>
+        </div>
+      </div>
+      <mat-icon class="water-widget-arrow">chevron_right</mat-icon>
     </section>
 
     <!-- ===== Profile Stats ===== -->
