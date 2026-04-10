@@ -416,6 +416,83 @@
   flex-shrink: 0;
 }
 
+/* ── Gut Health Widget ── */
+.gut-widget {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: var(--bg-card);
+  border-radius: 20px;
+  padding: 16px;
+  margin-bottom: 16px;
+  box-shadow: var(--shadow-card);
+  cursor: pointer;
+  transition: transform .15s, box-shadow .15s;
+  border: 1px solid var(--border);
+}
+
+.gut-widget:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-sm), 0 4px 16px rgba(0, 184, 148, .1);
+}
+
+.gut-widget-icon {
+  width: 52px;
+  height: 52px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, rgba(0, 184, 148, .1), rgba(0, 184, 148, .18));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.gut-widget-emoji { font-size: 26px; }
+
+.gut-widget-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.gut-widget-info .section-title {
+  margin: 0 0 2px;
+  font-size: 14px;
+}
+
+.gut-widget-status {
+  margin: 0 0 6px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.gut-widget-bar-track {
+  height: 6px;
+  border-radius: 3px;
+  background: var(--bg-subtle);
+  overflow: hidden;
+  margin-bottom: 4px;
+}
+
+.gut-widget-bar-fill {
+  height: 100%;
+  border-radius: 3px;
+  background: linear-gradient(90deg, #00b894, #55efc4);
+  transition: width .6s cubic-bezier(.4,0,.2,1);
+  max-width: 100%;
+}
+
+.gut-widget-pct {
+  font-size: 11px;
+  font-weight: 600;
+  color: #00b894;
+}
+
+.gut-widget-arrow {
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
 /* ── Profile Stats ── */
 .profile-stats { margin-bottom: 16px; }
 

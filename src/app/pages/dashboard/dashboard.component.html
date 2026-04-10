@@ -2,26 +2,11 @@
 <nav class="top-nav">
   <div class="nav-left">
     <mat-icon class="brand-icon">local_fire_department</mat-icon>
-    <span class="brand-name">J-NubCal</span>
+    <span class="brand-name">J-Cal</span>
   </div>
   <div class="nav-right">
     <button mat-icon-button routerLink="/notification-settings" [matTooltip]="i18n.t('dash.notifications')">
       <mat-icon>notifications</mat-icon>
-    </button>
-    <button mat-icon-button routerLink="/manage-foods" [matTooltip]="i18n.t('dash.managefoods')">
-      <mat-icon>restaurant_menu</mat-icon>
-    </button>
-    <button mat-icon-button routerLink="/manage-workouts" [matTooltip]="i18n.t('dash.manageWorkouts')">
-      <mat-icon>sports_score</mat-icon>
-    </button>
-    <button mat-icon-button routerLink="/manage-exercises" [matTooltip]="i18n.t('dash.manageExercises')">
-      <mat-icon>edit_note</mat-icon>
-    </button>
-    <button mat-icon-button routerLink="/add-food" [matTooltip]="i18n.t('dash.addFood')">
-      <mat-icon>add_circle_outline</mat-icon>
-    </button>
-    <button mat-icon-button routerLink="/water-intake" [matTooltip]="i18n.t('dash.waterIntake')">
-      <mat-icon>water_drop</mat-icon>
     </button>
     <button mat-icon-button [matMenuTriggerFor]="menu" class="avatar-btn">
       @if (avatarUrl()) {
@@ -31,6 +16,25 @@
       }
     </button>
     <mat-menu #menu="matMenu">
+      <button mat-menu-item routerLink="/add-food">
+        <mat-icon>add_circle_outline</mat-icon> {{ i18n.t('dash.addFood') }}
+      </button>
+      <button mat-menu-item routerLink="/water-intake">
+        <mat-icon>water_drop</mat-icon> {{ i18n.t('dash.waterIntake') }}
+      </button>
+      <button mat-menu-item routerLink="/manage-foods">
+        <mat-icon>restaurant_menu</mat-icon> {{ i18n.t('dash.managefoods') }}
+      </button>
+      <button mat-menu-item routerLink="/manage-workouts">
+        <mat-icon>sports_score</mat-icon> {{ i18n.t('dash.manageWorkouts') }}
+      </button>
+      <button mat-menu-item routerLink="/manage-exercises">
+        <mat-icon>edit_note</mat-icon> {{ i18n.t('dash.manageExercises') }}
+      </button>
+      <button mat-menu-item routerLink="/gut-health">
+        <mat-icon>spa</mat-icon> {{ i18n.t('gut.title') }}
+      </button>
+      <mat-divider></mat-divider>
       <button mat-menu-item routerLink="/profile-setup">
         <mat-icon>settings</mat-icon> {{ i18n.t('dash.editProfile') }}
       </button>
@@ -136,7 +140,7 @@
     </section>
 
     <!-- ===== Workout Program Banner ===== -->
-    <section class="program-banner" routerLink="/workout-program">
+    <section class="program-banner" routerLink="/kb-dashboard">
       <div class="banner-icon-wrap">
         <mat-icon>local_fire_department</mat-icon>
       </div>
@@ -209,6 +213,38 @@
         </div>
       </div>
       <mat-icon class="water-widget-arrow">chevron_right</mat-icon>
+    </section>
+
+    <!-- ===== Gut Health Widget ===== -->
+    <section class="gut-widget" routerLink="/gut-health">
+      <div class="gut-widget-icon">
+        @if (gutTodayLogs().length > 0) {
+          @if (gutTodayLogs()[0].has_bowel_movement) {
+            <span class="gut-widget-emoji">{{ gutTodayLogs()[0].feeling === 'good' ? '🙂' : gutTodayLogs()[0].feeling === 'bad' ? '😣' : '😐' }}</span>
+          } @else {
+            <span class="gut-widget-emoji">📝</span>
+          }
+        } @else {
+          <span class="gut-widget-emoji">🌿</span>
+        }
+      </div>
+      <div class="gut-widget-info">
+        <h3 class="section-title">{{ i18n.t('gut.dashTitle') }}</h3>
+        <p class="gut-widget-status">
+          @if (gutTodayLogs().length > 0) {
+            {{ gutTodayLogs().length }} {{ i18n.t('gut.dashTimes') }}
+          } @else {
+            {{ i18n.t('gut.dashNotLogged') }}
+          }
+        </p>
+        @if (gutGoodPct() > 0) {
+          <div class="gut-widget-bar-track">
+            <div class="gut-widget-bar-fill" [style.width.%]="gutGoodPct()"></div>
+          </div>
+          <span class="gut-widget-pct">{{ gutGoodPct() }}% {{ i18n.t('gut.dashGood') }}</span>
+        }
+      </div>
+      <mat-icon class="gut-widget-arrow">chevron_right</mat-icon>
     </section>
 
     <!-- ===== Profile Stats ===== -->

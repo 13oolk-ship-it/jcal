@@ -1,0 +1,165 @@
+<!-- Header -->
+<header class="kb-header">
+  <button class="back-btn" (click)="goBack()">
+    <mat-icon>chevron_left</mat-icon>
+  </button>
+  <div class="header-center">
+    <h1>{{ i18n.t('kbDash.title') }}</h1>
+    <p>{{ i18n.t('kbDash.subtitle') }}</p>
+  </div>
+  <button class="go-program-btn" (click)="goToProgram()">
+    <mat-icon>play_arrow</mat-icon>
+  </button>
+</header>
+
+@if (loading()) {
+  <div class="loading-center"><mat-spinner diameter="40"></mat-spinner></div>
+} @else {
+  <div class="kb-page">
+
+    <!-- ===== Big Ring ===== -->
+    <section class="hero-card">
+      <div class="big-ring-wrap">
+        <svg viewBox="0 0 160 160" class="big-ring">
+          <circle cx="80" cy="80" r="70" class="ring-track" />
+          <circle cx="80" cy="80" r="70" class="ring-bar"
+            [style.stroke-dasharray]="439.82"
+            [style.stroke-dashoffset]="439.82 - (439.82 * progressPercent()) / 100"
+            [style.stroke]="currentPhase().color" />
+        </svg>
+        <div class="ring-center">
+          <span class="ring-pct">{{ progressPercent() }}%</span>
+          <span class="ring-label">{{ i18n.t('kbDash.complete') }}</span>
+        </div>
+      </div>
+
+      <div class="hero-stats-row">
+        <div class="hero-stat">
+          <mat-icon>check_circle</mat-icon>
+          <div>
+            <span class="stat-val">{{ completedCount() }}<small>/{{ totalDays }}</small></span>
+            <span class="stat-lbl">{{ i18n.t('kb.daysCompleted') }}</span>
+          </div>
+        </div>
+        <div class="hero-divider"></div>
+        <div class="hero-stat">
+          <mat-icon>local_fire_department</mat-icon>
+          <div>
+            <span class="stat-val">{{ currentStreak() }}</span>
+            <span class="stat-lbl">{{ i18n.t('kb.streak') }}</span>
+          </div>
+        </div>
+        <div class="hero-divider"></div>
+        <div class="hero-stat">
+          <mat-icon>emoji_events</mat-icon>
+          <div>
+            <span class="stat-val">{{ bestStreak() }}</span>
+            <span class="stat-lbl">{{ i18n.t('kbDash.bestStreak') }}</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== Phase Progress ===== -->
+    <section class="phases-section">
+      <h3 class="section-title">{{ i18n.t('kbDash.phaseProgress') }}</h3>
+      <div class="phase-cards">
+        @for (p of phaseProgress(); track p.id) {
+          <div class="phase-card" [class.active]="currentPhase().id === p.id">
+            <div class="phase-card-header">
+              <div class="phase-badge" [style.background]="p.color">
+                <mat-icon>{{ p.icon }}</mat-icon>
+              </div>
+              <div class="phase-card-info">
+                <span class="phase-card-title">{{ i18n.t(p.titleKey) }}</span>
+                <span class="phase-card-count">{{ p.completed }}/{{ p.total }} {{ i18n.t('kbDash.days') }}</span>
+              </div>
+              <span class="phase-pct" [style.color]="p.color">{{ p.percent }}%</span>
+            </div>
+            <div class="phase-bar-track">
+              <div class="phase-bar-fill" [style.width.%]="p.percent" [style.background]="p.color"></div>
+            </div>
+          </div>
+        }
+      </div>
+    </section>
+
+    <!-- ===== Calendar Grid ===== -->
+    <section class="calendar-section">
+      <h3 class="section-title">{{ i18n.t('kbDash.calendar') }}</h3>
+      <div class="calendar-card">
+        <div class="cal-header-row">
+          @for (label of ['M','T','W','T','F','S','S']; track $index) {
+            <span class="cal-day-label">{{ label }}</span>
+          }
+        </div>
+        @for (week of calendarWeeks(); track $index) {
+          <div class="cal-row">
+            @for (day of week; track $index) {
+              @if (day !== null) {
+                <div
+                  class="cal-cell"
+                  [class.done]="completedDays().has(day)"
+                  [style.--phase-color]="getPhaseForDay(day).color">
+                  <span class="cal-num">{{ day }}</span>
+                  @if (completedDays().has(day)) {
+                    <mat-icon class="cal-check">check</mat-icon>
+                  }
+                </div>
+              } @else {
+                <div class="cal-cell empty"></div>
+              }
+            }
+          </div>
+        }
+      </div>
+    </section>
+
+    <!-- ===== Quick Stats ===== -->
+    <section class="quick-stats">
+      <div class="qs-card">
+        <mat-icon [style.color]="'#00b894'">trending_up</mat-icon>
+        <span class="qs-val">{{ remainingDays() }}</span>
+        <span class="qs-lbl">{{ i18n.t('kbDash.daysLeft') }}</span>
+      </div>
+      <div class="qs-card">
+        <mat-icon [style.color]="'#e17055'">speed</mat-icon>
+        <span class="qs-val">{{ currentPhase().id }}</span>
+        <span class="qs-lbl">{{ i18n.t('kbDash.currentPhase') }}</span>
+      </div>
+      <div class="qs-card">
+        <mat-icon [style.color]="'#0984e3'">fitness_center</mat-icon>
+        <span class="qs-val">{{ completedCount() * 4 }}</span>
+        <span class="qs-lbl">{{ i18n.t('kbDash.exercises') }}</span>
+      </div>
+    </section>
+
+    <!-- ===== Recent Activity ===== -->
+    @if (recentActivity().length > 0) {
+      <section class="activity-section">
+        <h3 class="section-title">{{ i18n.t('kbDash.recentActivity') }}</h3>
+        <div class="activity-list">
+          @for (item of recentActivity(); track item.day) {
+            <div class="activity-row">
+              <div class="activity-dot" [style.background]="item.phase.color"></div>
+              <div class="activity-info">
+                <span class="activity-day">{{ i18n.t('kb.day') }} {{ item.day }} — {{ i18n.t(item.phase.titleKey) }}</span>
+                <span class="activity-date">{{ formatDate(item.date) }}</span>
+              </div>
+              <mat-icon class="activity-check">check_circle</mat-icon>
+            </div>
+          }
+        </div>
+      </section>
+    }
+
+    <!-- ===== CTA ===== -->
+    <section class="cta-section">
+      <button class="cta-btn" (click)="goToProgram()">
+        <mat-icon>play_circle</mat-icon>
+        <span>{{ i18n.t('kbDash.continueProgram') }}</span>
+      </button>
+    </section>
+
+  </div>
+}

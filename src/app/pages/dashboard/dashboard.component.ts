@@ -6,9 +6,10 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { BaseChartDirective } from 'ng2-charts';
+import { MatDividerModule } from '@angular/material/divider';
+import { BaseChartDirective, provideCharts, withDefaultRegisterables } from 'ng2-charts';
 import { ChartConfiguration } from 'chart.js';
-import { SupabaseService, Meal, Profile, Workout, WeightLog, WaterIntake } from '../../services/supabase.service';
+import { SupabaseService, Meal, Profile, Workout, WeightLog, WaterIntake, GutHealthLog } from '../../services/supabase.service';
 import { ToastService } from '../../services/toast.service';
 import { I18nService, Lang } from '../../services/i18n.service';
 import { ThemeService, ThemeId } from '../../services/theme.service';
@@ -24,10 +25,12 @@ import { ThemeService, ThemeId } from '../../services/theme.service';
     MatMenuModule,
     MatProgressSpinnerModule,
     MatTooltipModule,
+    MatDividerModule,
     BaseChartDirective,
   ],
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.css',
+  providers: [provideCharts(withDefaultRegisterables())],
 })
 export class DashboardComponent implements OnInit {
   loading = signal(true);
@@ -64,6 +67,16 @@ export class DashboardComponent implements OnInit {
     const target = this.waterTarget();
     if (target <= 0) return 0;
     return Math.min(100, Math.round((this.waterAmount() / target) * 100));
+  });
+
+  // Gut health
+  gutTodayLogs = signal<GutHealthLog[]>([]);
+  gutHistory = signal<GutHealthLog[]>([]);
+  gutGoodPct = computed(() => {
+    const logs = this.gutHistory().filter(h => h.has_bowel_movement);
+    if (logs.length === 0) return 0;
+    const good = logs.filter(h => h.feeling === 'good').length;
+    return Math.round((good / logs.length) * 100);
   });
 
   // Computed profile helpers
@@ -243,6 +256,8 @@ export class DashboardComponent implements OnInit {
       this.loadWeightData();
       // Load water intake data
       this.loadWaterData();
+      // Load gut health data
+      this.loadGutHealthData();
     } catch (err) {
       console.error('Failed to load dashboard', err);
     } finally {
@@ -429,6 +444,21 @@ export class DashboardComponent implements OnInit {
       }
     } catch (err) {
       console.error('Failed to load water data', err);
+    }
+  }
+
+  // ─── Gut Health ──────────────────────────────────
+  private async loadGutHealthData() {
+    try {
+      const today = new Date().toISOString().split('T')[0];
+      const [todayLogs, history] = await Promise.all([
+        this.supabase.getGutHealthLogsForDate(today),
+        this.supabase.getGutHealthHistory(30),
+      ]);
+      this.gutTodayLogs.set(todayLogs);
+      this.gutHistory.set(history);
+    } catch (err) {
+      console.error('Failed to load gut health data', err);
     }
   }
 

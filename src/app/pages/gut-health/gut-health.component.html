@@ -1,0 +1,214 @@
+<!-- Header -->
+<header class="gh-header">
+  <button mat-icon-button routerLink="/dashboard" class="back-btn">
+    <mat-icon>arrow_back</mat-icon>
+  </button>
+  <h1>{{ i18n.t('gut.title') }}</h1>
+  <div class="header-spacer"></div>
+</header>
+
+<div class="gh-page">
+  @if (loading()) {
+    <div class="gh-loading">
+      <div class="loading-pulse"></div>
+    </div>
+  } @else {
+
+    <!-- ===== Weekly Dots ===== -->
+    <section class="weekly-section">
+      <div class="weekly-dots">
+        @for (dot of weeklyDots(); track dot.date) {
+          <div class="dot-col">
+            <span class="dot-day">{{ dot.day }}</span>
+            <div class="dot" [class]="'dot-' + dot.bestFeeling"
+                 [class.dot-today]="dot.date === today">
+              @switch (dot.bestFeeling) {
+                @case ('good') { <span>🙂</span> }
+                @case ('normal') { <span>😐</span> }
+                @case ('bad') { <span>😣</span> }
+                @case ('no') { <span>❌</span> }
+                @default { <span class="dot-empty">·</span> }
+              }
+              @if (dot.count > 1) {
+                <span class="dot-badge">{{ dot.count }}</span>
+              }
+            </div>
+          </div>
+        }
+      </div>
+      @if (history().length > 0) {
+        <div class="weekly-stat">
+          <span class="stat-pct">{{ goodDaysPct() }}%</span>
+          <span class="stat-label">{{ i18n.t('gut.goodDays') }}</span>
+        </div>
+      }
+    </section>
+
+    <!-- ===== Insight Banner ===== -->
+    @if (insight()) {
+      <section class="insight-banner" [class]="'insight-' + insight()">
+        @switch (insight()) {
+          @case ('fiber') {
+            <span class="insight-emoji">💡</span>
+            <p>{{ i18n.t('gut.insightFiber') }}</p>
+          }
+          @case ('loose') {
+            <span class="insight-emoji">⚠️</span>
+            <p>{{ i18n.t('gut.insightLoose') }}</p>
+          }
+          @case ('great') {
+            <span class="insight-emoji">🌟</span>
+            <p>{{ i18n.t('gut.insightGreat') }}</p>
+          }
+        }
+      </section>
+    }
+
+    <!-- ===== Today's Entries ===== -->
+    <section class="today-section">
+      <div class="today-header">
+        <h3>{{ i18n.t('gut.todayEntries') }}</h3>
+        <span class="today-count">{{ todayLogs().length }} {{ i18n.t('gut.dashTimes') }}</span>
+      </div>
+      @if (todayLogs().length > 0) {
+        <div class="today-list">
+          @for (log of todayLogs(); track log.id) {
+            <div class="today-row" [class.deleting]="deletingId() === log.id">
+              <div class="today-row-left">
+                @if (log.has_bowel_movement) {
+                  <span class="today-emoji">{{ getFeelingEmoji(log.feeling) }}</span>
+                } @else {
+                  <span class="today-emoji">❌</span>
+                }
+              </div>
+              <div class="today-row-body">
+                @if (log.has_bowel_movement) {
+                  <span class="today-row-type">{{ getStoolEmoji(log.stool_type) }} {{ getStoolLabel(log.stool_type) }} · {{ getFeelingLabel(log.feeling) }}</span>
+                } @else {
+                  <span class="today-row-type">{{ i18n.t('gut.noEntry') }}</span>
+                }
+                <span class="today-row-time">{{ formatTime(log.created_at) }}</span>
+                @if (log.notes) {
+                  <span class="today-row-notes">{{ log.notes }}</span>
+                }
+              </div>
+              <button class="today-delete-btn" (click)="deleteLog(log.id!)" [disabled]="deletingId() === log.id">
+                <mat-icon>close</mat-icon>
+              </button>
+            </div>
+          }
+        </div>
+      } @else {
+        <div class="today-empty">
+          <span>{{ i18n.t('gut.noEntriesToday') }}</span>
+        </div>
+      }
+    </section>
+
+    <!-- ===== Log New Entry ===== -->
+    <!-- Step: Ask -->
+    @if (step() === 'ask') {
+      <section class="step-card ask-card">
+        <div class="step-icon-wrap">
+          <span class="step-main-emoji">🌿</span>
+        </div>
+        <h2>{{ i18n.t('gut.question') }}</h2>
+        <p class="step-subtitle">{{ i18n.t('gut.questionSub') }}</p>
+        <div class="ask-buttons">
+          <button class="ask-btn ask-no" (click)="selectNo()">
+            <span class="ask-emoji">❌</span>
+            <span>{{ i18n.t('gut.no') }}</span>
+          </button>
+          <button class="ask-btn ask-yes" (click)="selectYes()">
+            <span class="ask-emoji">✅</span>
+            <span>{{ i18n.t('gut.yes') }}</span>
+          </button>
+        </div>
+      </section>
+    }
+
+    <!-- Step: Stool Type -->
+    @if (step() === 'type') {
+      <section class="step-card">
+        <h2>{{ i18n.t('gut.selectType') }}</h2>
+        <p class="step-subtitle">{{ i18n.t('gut.selectTypeSub') }}</p>
+        <div class="type-grid">
+          @for (st of stoolTypes; track st.id) {
+            <button class="type-btn"
+                    [class.type-selected]="stoolType() === st.id"
+                    (click)="selectStoolType(st.id)">
+              <span class="type-emoji">{{ st.emoji }}</span>
+              <span class="type-label">{{ i18n.t(st.labelKey) }}</span>
+            </button>
+          }
+        </div>
+      </section>
+    }
+
+    <!-- Step: Feeling -->
+    @if (step() === 'feeling') {
+      <section class="step-card">
+        <h2>{{ i18n.t('gut.howFeeling') }}</h2>
+        <p class="step-subtitle">{{ i18n.t('gut.howFeelingSub') }}</p>
+        <div class="feeling-grid">
+          @for (f of feelings; track f.id) {
+            <button class="feeling-btn"
+                    [class.feeling-selected]="feeling() === f.id"
+                    (click)="selectFeeling(f.id)">
+              <span class="feeling-emoji">{{ f.emoji }}</span>
+              <span class="feeling-label">{{ i18n.t(f.labelKey) }}</span>
+            </button>
+          }
+        </div>
+      </section>
+    }
+
+    <!-- Step: Notes -->
+    @if (step() === 'notes') {
+      <section class="step-card notes-card">
+        <h2>{{ i18n.t('gut.addNotes') }}</h2>
+        <p class="step-subtitle">{{ i18n.t('gut.addNotesSub') }}</p>
+        <textarea class="notes-input"
+                  [placeholder]="i18n.t('gut.notesPlaceholder')"
+                  [value]="notes()"
+                  (input)="notes.set($any($event.target).value)"
+                  rows="3"></textarea>
+        <button class="save-btn" (click)="saveLog()" [disabled]="saving()">
+          @if (saving()) {
+            <span class="save-spinner"></span>
+          } @else {
+            <mat-icon>check_circle</mat-icon>
+            <span>{{ i18n.t('gut.save') }}</span>
+          }
+        </button>
+      </section>
+    }
+
+    <!-- ===== History ===== -->
+    @if (history().length > 0) {
+      <section class="history-section">
+        <h3 class="history-title">{{ i18n.t('gut.recentHistory') }}</h3>
+        <div class="history-list">
+          @for (log of history().slice(0, 15); track log.id) {
+            <div class="history-row">
+              <div class="history-date">
+                <span class="history-day">{{ log.date.split('-')[2] }}</span>
+                <span class="history-month">{{ log.date.split('-')[1] }}</span>
+              </div>
+              <div class="history-body">
+                @if (log.has_bowel_movement) {
+                  <span class="history-emoji">{{ getFeelingEmoji(log.feeling) }}</span>
+                  <span class="history-type">{{ getStoolEmoji(log.stool_type) }} {{ getStoolLabel(log.stool_type) }}</span>
+                } @else {
+                  <span class="history-emoji">❌</span>
+                  <span class="history-type">{{ i18n.t('gut.noEntry') }}</span>
+                }
+              </div>
+              <span class="history-time">{{ formatTime(log.created_at) }}</span>
+            </div>
+          }
+        </div>
+      </section>
+    }
+  }
+</div>

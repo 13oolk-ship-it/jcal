@@ -70,10 +70,22 @@ export const routes: Routes = [
     data: { animation: 'WorkoutProgramPage' },
   },
   {
+    path: 'kb-dashboard',
+    loadComponent: () => import('./pages/kb-dashboard/kb-dashboard.component').then(m => m.KbDashboardComponent),
+    canActivate: [authGuard, profileGuard],
+    data: { animation: 'KbDashboardPage' },
+  },
+  {
     path: 'notification-settings',
     loadComponent: () => import('./pages/notification-settings/notification-settings.component').then(m => m.NotificationSettingsComponent),
     canActivate: [authGuard, profileGuard],
     data: { animation: 'NotificationSettingsPage' },
+  },
+  {
+    path: 'gut-health',
+    loadComponent: () => import('./pages/gut-health/gut-health.component').then(m => m.GutHealthComponent),
+    canActivate: [authGuard, profileGuard],
+    data: { animation: 'GutHealthPage' },
   },
   { path: '**', redirectTo: 'dashboard' },
 ];

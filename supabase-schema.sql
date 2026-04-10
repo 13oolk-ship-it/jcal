@@ -191,3 +191,35 @@ create policy "Users can delete own weight logs"
   using (auth.uid() = user_id);
 
 create index if not exists idx_weight_logs_user_date on public.weight_logs(user_id, date);
+
+-- 9. Gut Health Logs table (digestive health tracking)
+create table if not exists public.gut_health_logs (
+  id uuid default gen_random_uuid() primary key,
+  user_id uuid references auth.users(id) on delete cascade not null,
+  has_bowel_movement boolean not null default false,
+  stool_type integer check (stool_type between 1 and 5),
+  feeling text check (feeling in ('good', 'normal', 'bad')),
+  notes text,
+  date date not null default current_date,
+  created_at timestamptz default now()
+);
+
+alter table public.gut_health_logs enable row level security;
+
+create policy "Users can view own gut health logs"
+  on public.gut_health_logs for select
+  using (auth.uid() = user_id);
+
+create policy "Users can insert own gut health logs"
+  on public.gut_health_logs for insert
+  with check (auth.uid() = user_id);
+
+create policy "Users can update own gut health logs"
+  on public.gut_health_logs for update
+  using (auth.uid() = user_id);
+
+create policy "Users can delete own gut health logs"
+  on public.gut_health_logs for delete
+  using (auth.uid() = user_id);
+
+create index if not exists idx_gut_health_user_date on public.gut_health_logs(user_id, date);

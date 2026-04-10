@@ -1,6 +1,6 @@
 import { inject, Injectable, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
-import { createClient, SupabaseClient, User } from '@supabase/supabase-js';
+import type { SupabaseClient, User } from '@supabase/supabase-js';
 import { environment } from '../../environments/environment';
 
 export interface Food {
@@ -98,6 +98,17 @@ export interface WaterLog {
   created_at?: string;
 }
 
+export interface GutHealthLog {
+  id?: string;
+  user_id?: string;
+  has_bowel_movement: boolean;
+  stool_type?: number;
+  feeling?: 'good' | 'normal' | 'bad';
+  notes?: string;
+  date: string;
+  created_at?: string;
+}
+
 export interface ProgramDayLog {
   id?: number;
   user_id?: string;
@@ -112,15 +123,25 @@ export interface ProgramDayLog {
 export class SupabaseService {
   private supabase!: SupabaseClient;
   private isBrowser: boolean;
+  private clientReady: Promise<void> | null = null;
 
   constructor() {
     this.isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
-    if (this.isBrowser) {
-      this.supabase = createClient(
-        environment.supabaseUrl,
-        environment.supabaseKey
-      );
+  }
+
+  private ensureClient(): Promise<void> {
+    if (!this.isBrowser) {
+      throw new Error('Supabase operations are only available in the browser.');
     }
+    if (!this.clientReady) {
+      this.clientReady = import('@supabase/supabase-js').then(({ createClient }) => {
+        this.supabase = createClient(
+          environment.supabaseUrl,
+          environment.supabaseKey
+        );
+      });
+    }
+    return this.clientReady;
   }
 
   private assertBrowser(): void {
@@ -131,7 +152,7 @@ export class SupabaseService {
 
   // ─── Auth ────────────────────────────────────────
   async signUp(email: string, password: string) {
-    this.assertBrowser();
+    await this.ensureClient();
     const { data, error } = await this.supabase.auth.signUp({ email, password });
     if (error) throw error;
     // upsert profile
@@ -144,20 +165,21 @@ export class SupabaseService {
   }
 
   async signIn(email: string, password: string) {
-    this.assertBrowser();
+    await this.ensureClient();
     const { data, error } = await this.supabase.auth.signInWithPassword({ email, password });
     if (error) throw error;
     return data;
   }
 
   async signOut() {
-    this.assertBrowser();
+    await this.ensureClient();
     const { error } = await this.supabase.auth.signOut();
     if (error) throw error;
   }
 
   async getUser(): Promise<User | null> {
     if (!this.isBrowser) return null;
+    await this.ensureClient();
     // Try session from localStorage first (fast, no network)
     const { data: { session } } = await this.supabase.auth.getSession();
     if (session?.user) return session.user;
@@ -166,7 +188,8 @@ export class SupabaseService {
     return data.user;
   }
 
-  onAuthStateChange(callback: (event: string, session: unknown) => void) {
+  async onAuthStateChange(callback: (event: string, session: unknown) => void) {
+    await this.ensureClient();
     return this.supabase.auth.onAuthStateChange(callback);
   }
 
@@ -174,6 +197,7 @@ export class SupabaseService {
   async getProfile(): Promise<Profile | null> {
     const user = await this.getUser();
     if (!user) return null;
+    await this.ensureClient();
     const { data, error } = await this.supabase
       .from('profiles')
       .select('*')
@@ -184,7 +208,7 @@ export class SupabaseService {
   }
 
   async upsertProfile(profile: Partial<Omit<Profile, 'id' | 'created_at'>>): Promise<Profile> {
-    this.assertBrowser();
+    await this.ensureClient();
     const user = await this.getUser();
     if (!user) throw new Error('Not authenticated');
     const { data, error } = await this.supabase
@@ -198,7 +222,7 @@ export class SupabaseService {
 
   // ─── Avatar ──────────────────────────────────────
   async uploadAvatar(file: File): Promise<string> {
-    this.assertBrowser();
+    await this.ensureClient();
     const user = await this.getUser();
     if (!user) throw new Error('Not authenticated');
     const ext = file.name.split('.').pop();
@@ -220,7 +244,7 @@ export class SupabaseService {
 
   // ─── Food Images ─────────────────────────────────
   async uploadFoodImage(base64: string, mimeType: string): Promise<string> {
-    this.assertBrowser();
+    await this.ensureClient();
     const user = await this.getUser();
     if (!user) throw new Error('Not authenticated');
     const ext = mimeType.split('/')[1] || 'jpeg';
@@ -263,7 +287,7 @@ export class SupabaseService {
   }
 
   async updateFood(id: number, food: Partial<Omit<Food, 'id'>>): Promise<Food> {
-    this.assertBrowser();
+    await this.ensureClient();
     const { data, error } = await this.supabase
       .from('foods')
       .update(food)
@@ -275,7 +299,7 @@ export class SupabaseService {
   }
 
   async deleteFood(id: number): Promise<void> {
-    this.assertBrowser();
+    await this.ensureClient();
     const { error } = await this.supabase
       .from('foods')
       .delete()
@@ -306,7 +330,7 @@ export class SupabaseService {
   }
 
   async deleteMeal(mealId: number): Promise<void> {
-    this.assertBrowser();
+    await this.ensureClient();
     // Delete meal_items first (FK constraint)
     const { error: itemsError } = await this.supabase
       .from('meal_items')
@@ -362,7 +386,7 @@ export class SupabaseService {
 
   // ─── Workouts ────────────────────────────────────
   async addWorkout(workout: Omit<Workout, 'id' | 'user_id' | 'created_at'>): Promise<Workout> {
-    this.assertBrowser();
+    await this.ensureClient();
     const user = await this.getUser();
     if (!user) throw new Error('Not authenticated');
     const { data, error } = await this.supabase
@@ -402,7 +426,7 @@ export class SupabaseService {
   }
 
   async updateWorkout(id: number, updates: Partial<Omit<Workout, 'id' | 'user_id' | 'created_at'>>): Promise<Workout> {
-    this.assertBrowser();
+    await this.ensureClient();
     const { data, error } = await this.supabase
       .from('workouts')
       .update(updates)
@@ -414,7 +438,7 @@ export class SupabaseService {
   }
 
   async deleteWorkout(id: number): Promise<void> {
-    this.assertBrowser();
+    await this.ensureClient();
     const { error } = await this.supabase
       .from('workouts')
       .delete()
@@ -437,7 +461,7 @@ export class SupabaseService {
   }
 
   async addExercise(exercise: Omit<Exercise, 'id' | 'user_id' | 'created_at'>): Promise<Exercise> {
-    this.assertBrowser();
+    await this.ensureClient();
     const user = await this.getUser();
     if (!user) throw new Error('Not authenticated');
     const { data, error } = await this.supabase
@@ -450,7 +474,7 @@ export class SupabaseService {
   }
 
   async updateExercise(id: number, updates: Partial<Omit<Exercise, 'id' | 'user_id' | 'created_at'>>): Promise<Exercise> {
-    this.assertBrowser();
+    await this.ensureClient();
     const { data, error } = await this.supabase
       .from('exercises')
       .update(updates)
@@ -462,7 +486,7 @@ export class SupabaseService {
   }
 
   async deleteExercise(id: number): Promise<void> {
-    this.assertBrowser();
+    await this.ensureClient();
     const { error } = await this.supabase
       .from('exercises')
       .delete()
@@ -472,7 +496,7 @@ export class SupabaseService {
 
   // ─── Weight Logs ────────────────────────────────
   async upsertWeightLog(weight: number, date: string): Promise<WeightLog> {
-    this.assertBrowser();
+    await this.ensureClient();
     const user = await this.getUser();
     if (!user) throw new Error('Not authenticated');
 
@@ -505,7 +529,7 @@ export class SupabaseService {
   }
 
   async getWeightLogs(days: number = 30): Promise<WeightLog[]> {
-    this.assertBrowser();
+    await this.ensureClient();
     const user = await this.getUser();
     if (!user) return [];
     const since = new Date();
@@ -521,7 +545,7 @@ export class SupabaseService {
   }
 
   async getTodayWeightLog(): Promise<WeightLog | null> {
-    this.assertBrowser();
+    await this.ensureClient();
     const user = await this.getUser();
     if (!user) return null;
     const today = new Date().toISOString().split('T')[0];
@@ -537,7 +561,7 @@ export class SupabaseService {
 
   // ─── Water Intake ────────────────────────────────
   async getWaterIntakeForDate(date: string): Promise<WaterIntake | null> {
-    this.assertBrowser();
+    await this.ensureClient();
     const user = await this.getUser();
     if (!user) throw new Error('Not authenticated');
     const { data, error } = await this.supabase
@@ -551,7 +575,7 @@ export class SupabaseService {
   }
 
   async upsertWaterIntake(amount_ml: number, target_ml: number, date: string): Promise<WaterIntake> {
-    this.assertBrowser();
+    await this.ensureClient();
     const user = await this.getUser();
     if (!user) throw new Error('Not authenticated');
     const { data, error } = await this.supabase
@@ -564,7 +588,7 @@ export class SupabaseService {
   }
 
   async getWaterIntakeForWeek(startDate: string, endDate: string): Promise<WaterIntake[]> {
-    this.assertBrowser();
+    await this.ensureClient();
     const user = await this.getUser();
     if (!user) throw new Error('Not authenticated');
     const { data, error } = await this.supabase
@@ -579,7 +603,7 @@ export class SupabaseService {
   }
 
   async getLatestWaterTarget(): Promise<number | null> {
-    this.assertBrowser();
+    await this.ensureClient();
     const user = await this.getUser();
     if (!user) throw new Error('Not authenticated');
     const { data, error } = await this.supabase
@@ -595,7 +619,7 @@ export class SupabaseService {
 
   // ─── Water Logs ──────────────────────────────────
   async addWaterLog(amount_ml: number, date: string): Promise<WaterLog> {
-    this.assertBrowser();
+    await this.ensureClient();
     const user = await this.getUser();
     if (!user) throw new Error('Not authenticated');
     const { data, error } = await this.supabase
@@ -608,7 +632,7 @@ export class SupabaseService {
   }
 
   async getWaterLogsForDate(date: string): Promise<WaterLog[]> {
-    this.assertBrowser();
+    await this.ensureClient();
     const user = await this.getUser();
     if (!user) throw new Error('Not authenticated');
     const { data, error } = await this.supabase
@@ -622,7 +646,7 @@ export class SupabaseService {
   }
 
   async deleteWaterLog(id: number): Promise<void> {
-    this.assertBrowser();
+    await this.ensureClient();
     const { error } = await this.supabase
       .from('water_logs')
       .delete()
@@ -632,7 +656,7 @@ export class SupabaseService {
 
   // ─── Program Day Logs ────────────────────────────
   async getProgramDayLogs(programId: string): Promise<ProgramDayLog[]> {
-    this.assertBrowser();
+    await this.ensureClient();
     const user = await this.getUser();
     if (!user) throw new Error('Not authenticated');
     const { data, error } = await this.supabase
@@ -646,7 +670,7 @@ export class SupabaseService {
   }
 
   async toggleProgramDay(programId: string, day: number, completed: boolean): Promise<ProgramDayLog> {
-    this.assertBrowser();
+    await this.ensureClient();
     const user = await this.getUser();
     if (!user) throw new Error('Not authenticated');
     const date = new Date().toISOString().split('T')[0];
@@ -664,7 +688,7 @@ export class SupabaseService {
 
   // ─── Push Subscription ───────────────────────────
   async savePushSubscription(subscription: PushSubscription): Promise<void> {
-    this.assertBrowser();
+    await this.ensureClient();
     const user = await this.getUser();
     if (!user) throw new Error('Not authenticated');
     const { error } = await this.supabase
@@ -675,7 +699,7 @@ export class SupabaseService {
   }
 
   async removePushSubscription(): Promise<void> {
-    this.assertBrowser();
+    await this.ensureClient();
     const user = await this.getUser();
     if (!user) throw new Error('Not authenticated');
     const { error } = await this.supabase
@@ -683,5 +707,58 @@ export class SupabaseService {
       .update({ push_subscription: null, reminder_enabled: false })
       .eq('id', user.id);
     if (error) throw error;
+  }
+
+  // ─── Gut Health Logs ─────────────────────────────
+  async addGutHealthLog(log: Omit<GutHealthLog, 'id' | 'user_id' | 'created_at'>): Promise<GutHealthLog> {
+    await this.ensureClient();
+    const user = await this.getUser();
+    if (!user) throw new Error('Not authenticated');
+    const { data, error } = await this.supabase
+      .from('gut_health_logs')
+      .insert({ ...log, user_id: user.id })
+      .select()
+      .single();
+    if (error) throw error;
+    return data;
+  }
+
+  async getGutHealthLogsForDate(date: string): Promise<GutHealthLog[]> {
+    await this.ensureClient();
+    const user = await this.getUser();
+    if (!user) return [];
+    const { data, error } = await this.supabase
+      .from('gut_health_logs')
+      .select('*')
+      .eq('user_id', user.id)
+      .eq('date', date)
+      .order('created_at', { ascending: false });
+    if (error) throw error;
+    return data ?? [];
+  }
+
+  async deleteGutHealthLog(id: string): Promise<void> {
+    await this.ensureClient();
+    const { error } = await this.supabase
+      .from('gut_health_logs')
+      .delete()
+      .eq('id', id);
+    if (error) throw error;
+  }
+
+  async getGutHealthHistory(days: number = 30): Promise<GutHealthLog[]> {
+    await this.ensureClient();
+    const user = await this.getUser();
+    if (!user) return [];
+    const since = new Date();
+    since.setDate(since.getDate() - days);
+    const { data, error } = await this.supabase
+      .from('gut_health_logs')
+      .select('*')
+      .eq('user_id', user.id)
+      .gte('date', since.toISOString().split('T')[0])
+      .order('created_at', { ascending: false });
+    if (error) throw error;
+    return data ?? [];
   }
 }
